@@ -1,6 +1,7 @@
 import calendar
 import logging
 import math
+import numpy
 import os.path
 import Pyro5
 import scipy.stats as stats
@@ -10,6 +11,7 @@ import MonitorControl as MC
 import MonitorControl.BackEnds as BE
 import MonitorControl.BackEnds.ROACH1 as ROACH1
 import MonitorControl.BackEnds.ROACH1.firmware_server as fws
+import Radio_Astronomy as RA
 import support
 import support.local_dirs
 import support.pyro.pyro5_server
@@ -21,30 +23,7 @@ fws.logger.setLevel(logging.INFO)
 modulepath = os.path.dirname(os.path.abspath(__file__))
 paramfile = "model_params.xlsx"
 max_spectra_per_scan = 120 # 1 h at 5 s per spectrum
-  
-############################# module methods ################################
-
-def roach_name_adaptor(func):
-    """
-    If we send the number of the roach instead of the roach name, it will still
-    work. This will make it easier for this code to adapt to existing client
-    side use cases.
-    
-    The convention is that the DTO ROACHs, at least, are known by names
-    ("roach1", "roach2") or by index numbers (0, 1).
-    
-    Note that the ROACH name or number must be the first argument.
-    """
-    def wrapper(self, n, *args):
-        template = self.template
-        name = n
-        if isinstance(n, int):
-            if template == 'sao':
-                name = "{}64k-{}".format(template, n)
-            elif template == 'roach':
-                name = "{}{}".format(template, n+1)
-        return func(self, name, *args)
-    return wrapper
+T_sys = 60
 
 ################################ classes #################################
 
@@ -140,6 +119,7 @@ class SAObackend(support.PropertiedClass):
     """
     Sets all ROACHes to the same integration time.
     """
+    self.integr_time = int_time
     for name in list(self.roach.keys()):
       self.roach[name].integr_time_set(integr_time=int_time)
 
@@ -175,7 +155,7 @@ class SAObackend(support.PropertiedClass):
   # The following methods invoke individual ROACH methods.  This is to make
   # individual ROACHs accessible to the client.
   
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def firmware(self, roachname):
     """
     returns firmware loaded in specified ROACH
@@ -185,7 +165,7 @@ class SAObackend(support.PropertiedClass):
     """
     return self.roach[roachname].firmware
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def bandwidth(self, roachname):
     """
     returns the spectrometer bandwidth
@@ -196,7 +176,7 @@ class SAObackend(support.PropertiedClass):
     """
     return self.roach[roachname].bandwidth
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def freqs(self, roachname):
     """
     returns the channel frequencies
@@ -208,7 +188,7 @@ class SAObackend(support.PropertiedClass):
     """
     return self.roach[roachname].freqs
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def rf_gain_get(self, roachname, ADC=0, RF=0):
     """
     returns the gain of the specified RF channel
@@ -222,7 +202,7 @@ class SAObackend(support.PropertiedClass):
     # this returns the gain value
     return self.roach[roachname].RFchannel[RF].rf_gain
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def rf_state(self, roachname, ADC=0, RF=0):
     """
     returns whether the RF section is enabled or not
@@ -238,8 +218,8 @@ class SAObackend(support.PropertiedClass):
     self.rf_enabled[roachname][0][0] = state
     return state
 
-  @roach_name_adaptor
-  def rf_gain_set(self, roachname, ADC=0, RF=0, gain=10):
+  @ROACH1.roach_name_adaptor
+  def rf_gain_set(self, roachname, ADC=0, RF=0, gain=0):
     """
     returns the gain of the specified RF channel
 
@@ -252,7 +232,7 @@ class SAObackend(support.PropertiedClass):
     # this returns the gain value
     return self.roach[roachname].RFchannel[RF].rf_gain
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def get_ADC_samples(self, roachname, RF=0):
     """
     returns ADC samples for specific ROACH and ADC input
@@ -262,7 +242,7 @@ class SAObackend(support.PropertiedClass):
                       self.roach[roachname].RFchannel[RF])
     return self.roach[roachname].RFchannel[RF].ADC_samples()
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def get_ADC_input(self, roachname, RF=0):
     """
     returns the power levelinto the ADC
@@ -282,7 +262,7 @@ class SAObackend(support.PropertiedClass):
 
   # methods for firmware
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def read_register(self, roachname, register):
     """
     returns register contents
@@ -291,7 +271,7 @@ class SAObackend(support.PropertiedClass):
 
   # miscellaneous methods
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def check_fans(self, roachname):
     """
     check the speed of the chassis fans
@@ -300,7 +280,7 @@ class SAObackend(support.PropertiedClass):
     self.logger.info("check_fans:  %s", response)
     return response
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def check_temperatures(self, roachname):
     """
     returns physical temperatures on the ROACH board
@@ -309,7 +289,7 @@ class SAObackend(support.PropertiedClass):
     self.logger.info("check_temperatures:  %s", response)
     return response
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def clock_synth_status(self, roachname):
     """
     Returns the status of the sampling clock
@@ -325,46 +305,46 @@ class SAObackend(support.PropertiedClass):
     """
     return self.roach[roachname].clock_synth.update_synth_status()
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def initialize(self, roachname):
     """Initialize the ROACH to default values."""
     self.logger.info("Initializing ROACH {}".format(roachname))
     self.roach[roachname].initialize_roach()
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def calibrate(self, roachname):
     """Calibrate the ROACH ADC."""
     self.logger.info("Calibrating ROACH {}".format(roachname))
     self.roach[roachname].calibrate()
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def fft_shift_set(self, roachname, val):
     """Set the fft shift for a specific FPGA."""
     self.logger.info(
               "Setting the fft shift for ROACH {} to {}".format(roachname, val))
     self.roach[roachname].fft_shift_set(val)
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def sync_start(self, roachname):
     """Call sync_start for specified ROACH"""
     self.logger.info(
       "Synchronizing vector accumulators for ROACH {}".format(roachname))
     self.roach[roachname].sync_start()
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def get_clk(self, roachname):
     self.logger.info("get_clk: ROACH {}".format(roachname))
     clk = self.roach[roachname].get_clk()
     return clk
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def get_adc_temp(self, roachname):
     self.logger.info("get_adc_temp: ROACH {}".format(roachname))
     self.logger.warning("get_adc_temp: the SAObackend.get_temperatures method is prefered")
     adc_temp = self.roach[roachname].get_adc_temp()
     return adc_temp
 
-  @roach_name_adaptor
+  @ROACH1.roach_name_adaptor
   def get_ambient_temp(self, roachname):
     self.logger.info("get_ambient_temp: ROACH {}".format(roachname))
     self.logger.warning("get_adc_temp: the SAObackend.get_temperatures method is prefered")
@@ -501,7 +481,10 @@ class SAOfwif(MC.DeviceReadThread):
     self.RFchannel = {0: SAOfwif.Channel(self, "RF0")}
     # integration (number of accumulations)
     self.acc_count = 0
-    self.max_count = 100 # dummy value over-written by start()
+    # The following is over-written by start().  The low value here is for the
+    # first call to ``action()`` after the thread is created but not yet
+    # suspended.
+    self.max_count = 1
     # initialize
     self.initialize_roach(integr_time=integr_time, timing_report=timing_report)
     self.daemon = True
@@ -510,7 +493,7 @@ class SAOfwif(MC.DeviceReadThread):
     self.start()
     self.suspend_thread()
 
-  def initialize_roach(self, RF_gain=10, RFid=0, integr_time=1,
+  def initialize_roach(self, RF_gain=0, RFid=0, integr_time=1,
                        timing_report=False):
     """
     Initialises the system to defaults.
@@ -576,8 +559,9 @@ class SAOfwif(MC.DeviceReadThread):
         self.logger.debug("action: accum type is %s", type(accum))
       else:
         # scan 0 is not a scan
-        self.scan = 1
-        self.parent.spectrum[self.name][self.scan] = []
+        time.sleep(0.010)
+        #self.scan = 1
+        #self.parent.spectrum[self.name][self.scan] = []
         
   def calibrate(self):
     """
@@ -673,12 +657,14 @@ class SAOfwif(MC.DeviceReadThread):
     """
     Returns ADC samples.
     """
-    # put in numpy array computation
-    samples = stats.norm.rvs(scale=1/math.sqrt(self.n_raw), size=2048)
+    samples = self.RFchannel[0].get_ADC_snap()
+    return samples
 
   def get_ADC_input(self):
     """
     Get the ADC input level properties and a set of samples
+    
+    This is input to the chip
     """
     samples = self.ADC_samples()
     if samples is None:
@@ -699,7 +685,7 @@ class SAOfwif(MC.DeviceReadThread):
 
   def get_RF_input(self):
     """
-    Get the mean RF section input level..
+    Get the mean RF section input level.
 
     This is the ADC level minus the gain of the RF section
     """
@@ -733,13 +719,26 @@ class SAOfwif(MC.DeviceReadThread):
       for sp in [1, 3, 2]:
         spec = numpy.append(spec, self.read_fpga_uscram(sp)[0])
     
-    We simulate. One raw spectrum would be::
+    We simulate. We begin with one set of normalized data samples::
     
-      values = norm.rvs(size=self.bandwidth)
+      normalized = norm.rvs(size=self.bandwidth)
     
-    with a standard deviation of 1.  
+    with a standard deviation of 1. The actual samples are integers in the range
+    of -128 to 127, with some standard deviation related to the power::
+    
+      samples = std * norm.rvs(size=self.bandwidth)
+      
+    See ``Channel.get_ADC_snap()``.  The central value theorem says that we end
+    up with a normal distrubtion about the mean::
+    
+      spectrum.mean = std *      max_count  * 2**24 / fft_shift
+      spectrum.std  = std * sqrt(max_count) * 2**24 / fft_shift
+    
     """
-    spec = stats.norm.rvs(scale=1/math.sqrt(self.n_raw), size=self.num_chan)
+    rms_radio = RA.rms_noise(T_sys, self.bandwidth*1e6, self.integr_time)/T_sys
+    sampleRMS = self.ADC_samples().std()
+    specmean = sampleRMS * self.n_raw
+    spec = specmean + stats.norm.rvs(sampleRMS, size=self.num_chan)
     return spec
 
   def get_next_spectrum(self):
@@ -758,7 +757,7 @@ class SAOfwif(MC.DeviceReadThread):
     # get the current value
     accum_cnt = self.get_accum_count()
     done = False
-    while time.time() < self.end_integr:
+    while time.time() < self.end_integr:  # this tests at the microsec level
       pass
     return self.get_spectrum()
 
@@ -871,7 +870,6 @@ class SAOfwif(MC.DeviceReadThread):
       self.rf = {"enabled": self.rf_enabled, "gain": self.rf_gain}
       self.logger.info("rf_get_gain: %s gain[0] = %f, enabled = %s",
                         self.name, self.rf_gain, self.rf_enabled)
-      
 
     def rf_gain_set(self, gain=0):
       """
@@ -893,12 +891,16 @@ class SAOfwif(MC.DeviceReadThread):
 
     def get_ADC_snap(self, now=False):
       """
-      Get the contents of the specified ADC snap block.
+      Get the contents of the specified ADC snap block. 
+      
+      This returns a normal distribution of integers with a standard deviation
+      of 57, which corresponds to 0 dBm into the ADC chip.
 
       @param now : True: a snap is triggered.  False: the last data are read.
       """
-      self.logger.debug("get_ADC_snap: called for %s", self)
-      pass
+      self.logger.debug("get_ADC_snap: called for %s %s",self.parent.name, self)
+      data = stats.norm.rvs(scale=107/math.sqrt(math.pi), 
+                            size=2048)
       return numpy.array(data, dtype=numpy.int8)
 
     def get_ADC_input(self):
@@ -914,9 +916,9 @@ class SAOfwif(MC.DeviceReadThread):
         level = {}
         level["sample mean"] = samples.mean()
         level["sample std"]  = samples.std()
-        level["Vrms ADC"] = level["sample std"]*adc_cnt_mv_scale_factor()/1000
-        level["W ADC"] = volts_to_watts(level["Vrms ADC"])
-        level["dBm ADC"] = v_to_dbm(level["Vrms ADC"])
+        level["Vrms ADC"] = level["sample std"]*ROACH1.adc_cnt_mv_scale_factor()/1000
+        level["W ADC"] = RA.volts_to_watts(level["Vrms ADC"])
+        level["dBm ADC"] = RA.v_to_dbm(level["Vrms ADC"])
         self.logger.info("get_ADC_input: %s", level)
         return level
 
@@ -932,8 +934,8 @@ class SAOfwif(MC.DeviceReadThread):
       level = self.get_ADC_input()
       if level != None:
         # Kurtosis spectrometer has only one ADC in ZDOC 0.
-        level["dBm RF"] = level["dBm ADC"] - self.gain
-        factor = gain(self.gain)
+        level["dBm RF"] = level["dBm ADC"] - self.rf_gain
+        factor = RA.gain(self.rf_gain)
         level["W RF"] = level["W ADC"]/factor
       return level      
 
@@ -954,7 +956,7 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
     logger - logging.Logger object but superceded
     run    - True if server is running
   """
-  def __init__(self, name, roachlist=None, 
+  def __init__(self, name, roachlist=['roach1', 'roach2', 'roach3', 'roach4'], 
                      logpath=support.local_dirs.log_dir, int_time=1,
                template='roach'):
     """
@@ -964,7 +966,7 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
     #mylogger.debug("__init__: arg 'name': %s (%s)", name, type(name))
     if roachlist:
       mylogger.debug("__init__: arg 'roachlist': %s", roachlist)
-    Pyro4Server.__init__(self, obj=self, name=name)
+    support.pyro.pyro5_server.Pyro5Server.__init__(self, obj=self, name=name)
     mylogger.debug(" PyroServer superclass initialized")
     #mylogger.debug("__init__: self.name: %s (%s)", self.name, type(self.name))
     # attach the local ROACH boards
