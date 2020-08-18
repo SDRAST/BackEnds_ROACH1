@@ -5,6 +5,7 @@ import numpy
 import os.path
 import Pyro5
 import scipy.stats as stats
+import socket
 import time
 
 import MonitorControl as MC
@@ -87,6 +88,7 @@ class SAObackend(support.PropertiedClass):
     roachkeys.sort()
     self.rf_enabled = {}
     self.spectrum = {}
+    self.callback = None
     for name in roachkeys:
       self.rf_enabled[name] = {}
       init = dict(parent=self,
@@ -136,12 +138,14 @@ class SAObackend(support.PropertiedClass):
     return get_help(self.__class__)
   
   @Pyro5.api.oneway
-  def start(self, n_accums=max_spectra_per_scan, integration_time=10.0):
+  def start(self, n_accums=max_spectra_per_scan, integration_time=10.0, 
+                  callback=None):
     """
     start a scan consisting of 'n_accums' accumulations
 
     Adapted from SAObackend.start and SAObackend.action
     """
+    self.callback = callback
     self.logger.debug("start: called for %d accumulations", n_accums)
     for name in list(self.roach.keys()):
       self.logger.debug("start: starting %s", name)
@@ -530,18 +534,23 @@ class SAOfwif(MC.DeviceReadThread):
     self.acc_count += 1
     self.logger.debug("action: %s acc_count=%d, max_count=%d scan=%d",
                       self.name, self.acc_count, self.max_count, self.scan)
+    UTtime = calendar.timegm(time.gmtime())
     if self.acc_count > self.max_count:
       # got all spectra for this scan
       self.suspend_thread()
       self.logger.debug("action: %s max accum count exceeded", self.name)
       # requested number of integrations (accumulations) is done
-      UTtime = calendar.timegm(time.gmtime())
       # increment scan
       self.scan += 1
       self.parent.spectrum[self.name][self.scan] = []
-      if isinstance(self, SAOspecServer):
+      if isinstance(self.parent, SAOspecServer):
         # invoke the Pyro server's callback
-        self.parent.start_cb(("done", self.name, self.scan, UTtime))
+        # self.parent.start_cb(("done", self.name, self.scan, UTtime))
+        if self.parent.callback:
+          msg = {"type": "scan end", "device": self.name,
+                 "time": UTtime, "scan": self.scan}
+          self.parent.callback.finished(self.parent.start.__name__, msg)
+          self.logger.debug("action: callback finished")
       else:
         self.logger.info("action: %s scan %d done", self.name, self.scan)
       # start a new scan
@@ -550,9 +559,17 @@ class SAOfwif(MC.DeviceReadThread):
       # Get another integration (accumulation)
       #    this blocks until the spectrum is done
       accum = self.get_next_spectrum()
-      if isinstance(self, SAOspecServer):
-        self.parent.start_cb(("record", self.name, self.acc_count, accum))
+      #self.logger.debug("action: self:          %s", self.parent)
+      #self.logger.debug("action: SAOspecServer: %s", SAOspecServer)
+      if isinstance(self.parent, SAOspecServer):
+        #self.parent.start_cb(("record", self.name, self.acc_count, accum))
+        if self.parent.callback:
+          msg = {"type":"spectrum", "device": self.name, "time": UTtime,
+                 "number": self.acc_count, "data": accum}
+          self.parent.callback.finished(self.parent.start.__name__, msg)
+          self.logger.debug("action: callback finished")
       elif self.scan:
+        # not a server; store spectrum
         self.parent.spectrum[self.name][self.scan].append(accum)
         self.logger.debug("action: %s got integration %d", self.name,
                           self.acc_count)
@@ -560,8 +577,6 @@ class SAOfwif(MC.DeviceReadThread):
       else:
         # scan 0 is not a scan
         time.sleep(0.010)
-        #self.scan = 1
-        #self.parent.spectrum[self.name][self.scan] = []
         
   def calibrate(self):
     """
@@ -766,8 +781,8 @@ class SAOfwif(MC.DeviceReadThread):
     """
     if self.parent is not None:
       if hasattr(self.parent, "quit"):
-        self.parent.quit.cb(("file", self.data_file_obj.file.filename,
-                              calendar.timegm(time.gmtime())))
+        self.parent.callback.finished(("file", self.data_file_obj.file.filename,
+                                      calendar.timegm(time.gmtime())))
     self.logger.info("quit: %s closed.", self.data_file_obj.file.filename)
     self.data_file_obj.close()
 
@@ -994,17 +1009,89 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
     """
     """
     helptext = """
-    bandwidth(roach): returns the spectrometer bandwidth
-    check_fans(roach): check the speed of the chassis fans
-    check_temperatures(roach): returns physical temperatures on the ROACH board
+    bandwidth(roach):           returns the spectrometer bandwidth
+    check_fans(roach):          check the speed of the chassis fans
+    check_temperatures(roach):  returns physical temperatures on the ROACH board
     clock_synth_status(roach):  Returns the status of the sampling clock
-    firmware(roach): returns firmware loaded in specified ROACH
-    freqs(roach): returns the channel frequencies
-    get_ADC_input(roach, RF): returns the power level into the ADC
+    firmware(roach):            returns firmware loaded in specified ROACH
+    freqs(roach):               returns the channel frequencies
+    get_ADC_input(roach, RF):   returns the power level into the ADC
     read_register(roach, register): returns register contents
-    rf_enabled(roach, RF): returns whether the RF section is enabled or not
+    rf_enabled(roach, RF):      returns whether the RF section is enabled or not
     rf_gain_get(roachname, RF): returns the gain of the specified RF channel
-    stop(): Stops the radiometer and closes the datafile
+    stop():                     Stops the radiometer and closes the datafile
     """
     return helptext
 
+        
+def create_arg_parser():
+    import argparse
+    parser = argparse.ArgumentParser(
+                                   description="Fire up APC(A) control server.")
+    parser.add_argument("--workstation", "-wsn", dest="wsn", default=0,
+                        required=False, action="store",type=int,
+             help="Select the operator workstation you'll be connecting to (0)")
+    parser.add_argument("--site","-st",dest="site",default="CDSCC",
+                        required=False, action="store",
+                        help="Select the DSN site you'll be accessing (CDSCC)")
+    parser.add_argument("--dss","-d",dest="dss",default=43,required=False,
+                        action="store",
+               help="Select which DSS antenna the server will connect to. (43)")
+    parser.add_argument("--simulated","-s",dest="s",default=False,
+                        required=False, action="store_true",
+                        help="In simulation mode"+
+                  " the APC(A) server won't connect to a control server (True)")
+    parser.add_argument("--local","-l",dest="local",default=True,
+                        required=False, action="store",
+                        help="In local mode, the APC(A) server will fire up"+
+                       " on localhost, without creating any SSH tunnels (True)")
+    parser.add_argument("--verbose","-v",dest="verbose",default=True,
+                        required=False, action="store_true",
+                        help="In verbose mode, the log level is DEBUG")
+
+    return parser
+
+
+def main(server_cls):
+    """
+    starts logging, creates a server_cls object, launches the server object
+    
+    
+    """
+    def _main():
+        from support.logs import setup_logging
+        import datetime
+        import os
+        
+        parsed = create_arg_parser().parse_args()
+        
+        level = logging.DEBUG
+        if not parsed.verbose:
+            level = logging.INFO
+        # logdir = "/home/ops/roach_data/sao_test_data/logdir/"
+        logdir = "/usr/local/Logs/"+socket.gethostname()
+        if not os.path.exists(logdir):
+            logdir = os.path.dirname(os.path.abspath(__file__))
+        timestamp = datetime.datetime.utcnow().strftime("%Y-%j-%Hh%Mm%Ss")
+        logfile = os.path.join(
+            logdir, "{}_{}.log".format(
+                server_cls.__name__, timestamp
+            )
+        )
+        setup_logging(logLevel=level, logfile=logfile)
+        server = server_cls(
+           name="test"
+        )
+        # print(server.feed_change(0, 0, 0))
+        server.launch_server(
+            ns=False,
+            objectId="APC",
+            objectPort=50004,
+            local=parsed.local,
+            threaded=False
+        )
+
+    return _main
+
+if __name__ == '__main__':
+    main(SAOspecServer)()
