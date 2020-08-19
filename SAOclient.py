@@ -2,21 +2,23 @@
 Python support for ROACH1 firmware
 """
 import logging
+import threading
 import time
 
 import Pyro5.api
 import Pyro5.errors
 
 import MonitorControl.BackEnds as BE
+import MonitorControl.BackEnds.ROACH1.simulator as ROACH1
 from support.pyro import asyncio
 
 logger = logging.getLogger(__name__)
 
-max_spectra_per_scan = 120 # 1 h
-max_num_scans = 120 # 5 d
+max_spectra_per_scan = 120 # 1 h with default 5~s integration
+max_num_scans = 12 # 0.5 d with above default
 
 
-class SAOclient(BE.Backend, asyncio.CallbackReceiver):
+class SAOclient(BE.Backend):
     """
     SAO 32K-channel spectrometer
 
@@ -54,10 +56,10 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
         @type  ROACHlist : list of str
         """
         mylogger = logging.getLogger(logger.name+".SAOclient")
-        Backend.__init__(self, name, inputs=inputs, output_names=output_names)
+        BE.Backend.__init__(self, name, inputs=inputs, output_names=output_names)
         uri = Pyro5.api.URI("PYRO:Spec@localhost:50004")
         if hardware:
-            self.hardware = async.AsyncProxy(uri)
+            self.hardware = Pyro5.api.Proxy(uri)
             try:
                 self.hardware.__get_state__()
             except Pyro5.errors.CommunicationError as details:
@@ -67,7 +69,7 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
                 # no __get_state__ because we have a connection
                 pass
         else:
-            self.hardware = None
+            self.hardware = ROACH1.SAOspecServer('test')
         self.name = name
         self.logger = mylogger
         self.logger.info("__init__: %s input channels: %s", self, self.inputs)
@@ -80,9 +82,17 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
                      }
                      for name in self.hardware.roachnames}
         self.scans = scans
-        # callback handler and queue
-        self.cb_q = CallbackQueue()
-        self.cb_receiver = CallbackReceiver(cb_q)
+        # callback handler
+        self.cb_receiver = asyncio.CallbackReceiver(parent=self)
+        self.data_getter = threading.Thread(target=self.get_data, daemon=True)
+        self.data_getter.start()
+    
+    def get_data(self):
+        while True:
+          data = self.cb_receiver.queue.get()
+          print( data[1]['device'], data[1]['time'] )
+        self.data_getter.join()
+        
     @property
     def scan_finished(self):
         done = [self.scans[name]["done"] for name in self.scans]
@@ -90,9 +100,13 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
 
     @Pyro5.api.expose
     @Pyro5.api.callback
-    def start_handler(self, res):
+    def input_handler(self, res):
         """
-        this is the old way o
+        Handles the response from start() which is invoked for each ROACH
+        
+        The command for starting all the ROACHs is start_recording().
+        this is the old way of handling the data returned by the spectrometer
+        server
         """
         if hasattr(res, "count"):  # means we got a tuple or a list
             status, name, scan, finish_time = res
@@ -114,21 +128,8 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
                         "scan":0
                       }
                       for name in self.scans}
-
-    #def __getattr__(self, attr):
-        #if self.hardware is not None:
-            #return getattr(self.hardware, attr)
-        #    return getattr(self, attr)
-    #    return getattr(self, attr)
-
-    def start_recording(self,
-                        n_scans=max_num_scans,
-                        n_accums=max_spectra_per_scan,
-                        integration_time=5.0):
-        self.logger.debug("start_recording: {} scans".format(n_scans))
-        
                         
-    def old_start_recording(self,
+    def start_recording(self,
                         n_scans=max_num_scans,
                         n_accums=max_spectra_per_scan,
                         integration_time=5.0):
@@ -140,8 +141,8 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
             self.start(
                 n_accums=n_accums,
                 integration_time=integration_time,
-                cb=self.start_handler
-          )
+                cb=self.cb_receiver
+            )
 
     def help(self, kind=None):
         """
@@ -153,21 +154,4 @@ class SAOclient(BE.Backend, asyncio.CallbackReceiver):
                 return self.hardware.backend_help()
         return "Types available: server, backend"
 
-  # ------------------------ methods for individual ROACHs---------------------
 
-    """
-    def auto_gain(self, roachname, best=0):
-        pwr = self.hardware.get_ADC_input(roachname)['dBm ADC']
-        while best-0.5 > pwr or pwr > best+0.5:
-            new_gain = best - pwr
-            if new_gain >= 20:
-                self.hardware.rf_gain_set(roachname, gain=20)
-                return 20
-            elif new_gain <= -11.5:
-                self.hardware.rf_gain_set(roachname, gain=-11.5)
-                return -11.5
-            else:
-                self.hardware.rf_gain_set(roachname, gain=new_gain)
-            pwr = self.hardware.get_ADC_input(roachname)['dBm ADC']
-        return self.hardware.rf_gain_get(roachname)
-    """

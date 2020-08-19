@@ -534,7 +534,7 @@ class SAOfwif(MC.DeviceReadThread):
     self.acc_count += 1
     self.logger.debug("action: %s acc_count=%d, max_count=%d scan=%d",
                       self.name, self.acc_count, self.max_count, self.scan)
-    UTtime = calendar.timegm(time.gmtime())
+    UNIXtime = time.time()+time.altzone
     if self.acc_count > self.max_count:
       # got all spectra for this scan
       self.suspend_thread()
@@ -548,7 +548,7 @@ class SAOfwif(MC.DeviceReadThread):
         # self.parent.start_cb(("done", self.name, self.scan, UTtime))
         if self.parent.callback:
           msg = {"type": "scan end", "device": self.name,
-                 "time": UTtime, "scan": self.scan}
+                 "time": UNIXtime, "scan": self.scan}
           self.parent.callback.finished(self.parent.start.__name__, msg)
           self.logger.debug("action: callback finished")
       else:
@@ -564,7 +564,7 @@ class SAOfwif(MC.DeviceReadThread):
       if isinstance(self.parent, SAOspecServer):
         #self.parent.start_cb(("record", self.name, self.acc_count, accum))
         if self.parent.callback:
-          msg = {"type":"spectrum", "device": self.name, "time": UTtime,
+          msg = {"type":"spectrum", "device": self.name, "time": UNIXtime,
                  "number": self.acc_count, "data": accum}
           self.parent.callback.finished(self.parent.start.__name__, msg)
           self.logger.debug("action: callback finished")
@@ -600,7 +600,7 @@ class SAOfwif(MC.DeviceReadThread):
     """
     Initiate the sync pulses
     """
-    self.end_integr = time.time() + self.integr_time
+    self.end_integr = time.time() + time.altzone + self.integr_time
     self.resume_thread()
     
   def fft_shift_set(self, fft_shift_schedule=int(0b0000000000000000)):
@@ -772,8 +772,9 @@ class SAOfwif(MC.DeviceReadThread):
     # get the current value
     accum_cnt = self.get_accum_count()
     done = False
-    while time.time() < self.end_integr:  # this tests at the microsec level
+    while time.time() + time.altzone < self.end_integr:  # test at the usec level
       pass
+    self.end_integr = time.time() + time.altzone + self.integr_time
     return self.get_spectrum()
 
   def quit(self):
