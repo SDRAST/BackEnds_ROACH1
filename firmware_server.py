@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import Pyro5.api
 
 from openpyxl import load_workbook
 from openpyxl.reader.excel import InvalidFileException
@@ -8,12 +9,12 @@ from support.excel import *
 
 module_logger = logging.getLogger(__name__)
 
-# modulepath = "/usr/local/lib/python2.7/DSN-Sci-packages/MonitorControl/BackEnds/ROACH1/"
 modulepath = os.path.dirname(os.path.abspath(__file__))
-module_logger.debug(modulepath)
+module_logger.debug("path to this module: %s", modulepath)
 paramfile = "model_params.xlsx"
-module_logger.debug(paramfile)
+module_logger.debug("model parameter file: %s", paramfile)
 
+@Pyro5.api.expose
 class FirmwareServer():
   """
   Serves information about firmware and their boffiles.
@@ -102,41 +103,52 @@ class FirmwareServer():
     @return: dict with data from "Parameters" sheet row
     """
     summary = {}
-    param_ws = self.param_ws
-    self.logger.debug("firmware_summary: for %s", param_ws)
-    column_ID = get_column_id(param_ws, 'key')
-    self.logger.debug("firmware_summary: column for 'key' is %s", column_ID)
-    row = get_row_number(param_ws, column_ID, key)
-    summary['row'] = row
-    bitstream = param_ws.cell(row=row,
-                           column=get_column_id(param_ws, 'bitstream')).value
+    self.logger.debug("firmware_summary: for %s", self.param_ws)
+    # Get the column names
+    # Create a dictionary keyed with column names
+    col_numbers = {}
+    number = 1
+    for col in self.param_ws.iter_cols(1, self.param_ws.max_column):
+      col_numbers[col[0].value] = number
+      number += 1
+    self.logger.debug("firmware summary: column name dict: %s", col_numbers)
+    # get the firmware key column
+    col_num = col_numbers['key']
+    self.logger.debug("firmware_summary: column for 'key' is %s", col_num)
+    # create a dictionary keyed with row names
+    row_numbers = {}
+    number = 1
+    for row in self.param_ws.iter_rows(1, self.param_ws.max_row):
+      row_numbers[row[0].value] = number
+      number += 1
+    self.logger.debug("firmware_summary: row name dict: %s", row_numbers)
+    # get selected firmware row
+    row_number = row_numbers[key]
+    # now generate the summary
+    summary['row'] = row_number
+    bitstream = self.param_ws.cell(row=row_number, 
+                                   column=col_numbers['bitstream']).value
     summary['bitstream'] = bitstream
-    n_chans = param_ws.cell(row=row,
-                            column=get_column_id(param_ws, 'nchans')).value
+    n_chans = self.param_ws.cell(row=row_number,
+                                 column=col_numbers['nchans']).value
     summary['nchans'] = n_chans
-    n_par_streams = param_ws.cell(row=row,
-                                  column=get_column_id(param_ws,
-                                                      'n_par_streams')).value
+    n_par_streams = self.param_ws.cell(row=row_number,
+                                      column=col_numbers['n_par_streams']).value
     summary['n_par_streams'] = n_par_streams
-    fft_shift = param_ws.cell(row=row,
-                              column=get_column_id(param_ws,
-                                                   'fft_shift')).value
+    fft_shift = self.param_ws.cell(row=row_number,
+                                   column=col_numbers['fft_shift']).value
     if type(fft_shift) == str or type(fft_shift) == str:
       fft_shift = int(fft_shift[2:],2)
     summary["fft_shift"] = fft_shift
-    summary["desired_rf_level"] = param_ws.cell(row=row,
-                                        column=get_column_id(param_ws,
-                                                   'desired_rf_level')).value
-    summary["spectrum_bits"] = param_ws.cell(row=row,
-                                     column=get_column_id(param_ws,
-                                                      'spectrum_bits')).value
-    bandwidth = param_ws.cell(row=row,
-                                  column=get_column_id(param_ws,
-                                                   'design bandwidth')).value
+    summary["desired_rf_level"] =self.param_ws.cell(row=row_number,
+                                   column=col_numbers['desired_rf_level']).value
+    summary["spectrum_bits"] = self.param_ws.cell(row=row_number,
+                                      column=col_numbers['spectrum_bits']).value
+    bandwidth = self.param_ws.cell(row=row_number,
+                                   column=col_numbers['design bandwidth']).value
     summary['bandwidth'] = bandwidth
-    interleaved = param_ws.cell(row=row,
-                              column=get_column_id(param_ws,
-                                                   'interleaved')).value
+    interleaved = self.param_ws.cell(row=row_number,
+                                        column=col_numbers['interleaved']).value
     if interleaved:
       clock = bandwidth
     else:
@@ -144,9 +156,8 @@ class FirmwareServer():
     summary['clock'] = clock
     sys_clock = (1+interleaved)*clock/n_par_streams
     summary['sys_clock'] = sys_clock
-    ADC_input_str = param_ws.cell(row=row,
-                                column=get_column_id(param_ws,
-                                                   'ADC inputs')).value
+    ADC_input_str = self.param_ws.cell(row=row_number,
+                                       column=col_numbers['ADC inputs']).value
     [ADC0str,ADC1str] = ADC_input_str.split(';')
     # There must always be an ADC0
     [ADC0in0str,ADC0in1str] = ADC0str.split(',')
@@ -159,30 +170,26 @@ class FirmwareServer():
       if ADC1in1str:
         ADC_inputs[1].append(int(ADC1in1str))
     summary['ADC inputs'] = ADC_inputs
-    self.logger.debug("firmware_summary: ADC inputs: %s",str(ADC_inputs))
-    ADC_type_str = param_ws.cell(row=row,
-                                 column=get_column_id(param_ws,
-                                                      'adc_type')).value
+    ADC_type_str = self.param_ws.cell(row=row_number,
+                                      column=col_numbers['adc_type']).value
     ADC_type_list = ADC_type_str.split(',')
     ADC_type = {0: ADC_type_list[0]}
     if len(ADC_type_list) == 2:
       ADC_type[1] = ADC_type_list[1]
     summary['ADC types'] = ADC_type
-    self.logger.debug("firmware summary: ADC types: %s",str(ADC_type))
     for index in range(4):
       gbe = 'gbe'+str(index)
       self.logger.debug("firmware_summary: processing %s", gbe)
       column_name = gbe +' MAC'
       self.logger.debug("firmware_summary: checking %s", column_name)
-      gbe_MAC = param_ws.cell(row=row,
-                              column=get_column_id(param_ws,
-                                                   column_name)).value
+      gbe_MAC = self.param_ws.cell(row=row_number,
+                                   column=col_numbers[column_name]).value
       self.logger.debug("firmware_summary: MAC is %s", gbe_MAC)
       if gbe_MAC:
         summary[gbe+' MAC'] = gbe_MAC
-        summary[gbe+' IP'] = param_ws.cell(row=row,
-                                           column=get_column_id(param_ws,
-                                                             gbe +' IP')).value
+        summary[gbe+' IP'] = self.param_ws.cell(row=row_number,
+                                           column=col_numbers[gbe +' IP']).value
+    self.logger.debug("firmware_summary so far: %s", summary)
     return summary
 
   def parse_registers(self,sheetname):

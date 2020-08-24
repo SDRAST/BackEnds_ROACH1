@@ -1,3 +1,86 @@
+# -*- coding: utf-8 -*-
+"""
+This simulates a multi-ROACH backend using the TAMS firmare.
+
+The basic program behavior is to create a 'SAObackend' object.  This is the
+parent for 'SAOfwif' (SAO firmware interface) objects, one for each ROACH. The
+'SAOfwif' class is a subclass of the 'DeviceReadThread' class.
+
+Each 'SAOfwif' object has one or more 'Channel' objects (one for ROACH1, four
+for ROACH2) which convert IF signals into 32K power spectra.
+
+Because conversion to 4-channel firmware is pending, a number of 'SAOfwif'
+methods should be eventually converted to 'SAOfwif.Channel' methods.
+
+Each 'SAOfwif' object initializes its channel(s) and simulates the ROACH's
+firmware initialization which consists of::
+  * setting the FFT shift register,
+  * setting the gain of the RF sections of the ADC channels,
+  * setting the accumulation (integration) time as a number of accumulations,
+  * configures the firmware,
+  * starts the thread, providing it with an 'action' method,
+  * immediately suspends the thread,
+  * sets the scan number to 1.
+
+The 'SAObackend' method 'start' is invoked by a client. For each ROACH it::
+  * resumes the thread,
+  * invokes the client's callback handler to provide the start time,
+  * sets the accumulation time to zero.
+
+The 'SAOfwif' method 'action' increments the number of accumulations and
+checks to see if it exceeds exceeds the specified number of accumulations for
+a scan.  If not it::
+  * waits for the accumulation to be completed,
+  * invokes the callback to tell the client that a new accumulation is done
+  * writes the accumulation (spectrum) to the datafile.
+If the number of accumulations exceeds the specified maximum it::
+  * invokes the callback to say that a scan is finished,
+  * suspends the threat,
+  * sets the number of accumulations to 0,
+  * increments the scan number.
+
+Note therefore that a 'scan' consists of some specified number of accumulations
+(integrations) each of which is written as a record, that is, as a row in a 2D
+numpy array.  It is the job of the client to start a new scan which resumes the
+thread.
+
+
+*Scan and Record Numbers*
+
+Scan and record numbers are both three digit strings starting with '000'. These
+are used as names for the groups in the HDF5 hierarchy.  Each ROACH has its own
+copy of the scan number. Record numbers are initialized to 0 when the SAOfwif
+object is created.  The scan numbers are updated in the SAObackend action()
+method when a scan is completed. (It's better to think of action() as a method
+which the SAOfwif parent provides.)
+
+*Metadata*
+
+The SAOfwif object creates an HDF5 file when it is initialised. The firmware
+register data which do not change are attrs of the top level of the HDF5
+hierarchy. The SAObackend method 'start(N)' will start a new scan of N records
+for each ROACH. Scans are at the second level of the HDF5 hierarchy. The attrs
+of the scan level of the file are those firmware registers which do not change
+during a scan. Each record is written to disk as it is acquired. The attrs of
+the record level are the register values which change all the time, and also
+'time' in seconds.
+
+Example
+=======
+  from MonitorControl.BackEnds.ROACH1.SAOfwif import SAObackend
+  be = SAObackend("SAO spectrometer",
+                  roachlist=["sao64k-1", "sao64k-2", "sao64k-3", "sao64k-4"])
+
+  roach = {}
+  outfile = {}
+  current_scan = be.roach["sao64k-4"].scan
+  for key in [1,2,3,4]:
+    outfile[key] = open("/var/tmp/sao64k-"+str(key)+".txt", "w")
+    roach[key] = be.roach['sao64k-'+str(key)]
+    roach[key].start_recording(acc_time=5)
+    roach[key].resume_thread()
+"""
+
 import calendar
 import logging
 import math
@@ -19,8 +102,6 @@ import support.pyro.pyro5_server
 
 logger = logging.getLogger(__name__)
 
-fws.logger.setLevel(logging.INFO)
-
 modulepath = os.path.dirname(os.path.abspath(__file__))
 paramfile = "model_params.xlsx"
 max_spectra_per_scan = 120 # 1 h at 5 s per spectrum
@@ -28,7 +109,7 @@ T_sys = 60
 
 ################################ classes #################################
 
-@Pyro5.api.expose
+@Pyro5.server.expose
 class SAObackend(support.PropertiedClass):
   """
   A simulated multi-ROACH 32k-channel x 4-IF spectrometer
@@ -58,6 +139,11 @@ class SAObackend(support.PropertiedClass):
     """
     Initialise a multi-IF high-res spectrometer.
 
+    It is intended that the class be told what ROACH boards to use but by
+    default it will use what it finds according to the name template provided,
+    in alphanumeric order.  In the absence of a template it will try 'roach'
+    and 'sao' as templates.
+
     @param name : name for the backend
     @type  name : str
 
@@ -79,7 +165,7 @@ class SAObackend(support.PropertiedClass):
     self._template = template
     # firmware details
     firmware_server = fws.FirmwareServer(modulepath, paramfile)
-    firmware_server.logger.setLevel(logging.INFO)
+    #firmware_server.logger.setLevel(logging.INFO)
     self.roach = {}
     for name in roachlist:
       # make unitialized ROACH
@@ -107,12 +193,36 @@ class SAObackend(support.PropertiedClass):
       }
       self.rf_state(name)
       self.spectrum[name] = {}
+    # convenience  -- assume all ROACHs the same
+    roach = self.roachnames[0]
+    self._firmware = self.get_firmware(roach)
+    self.logger.debug("__init__: firmware is %s", self._firmware)
+    self._bandwidth = self.get_bandwidth(roach)
+    self._bitstream = self.roach[roach].bitstream
     self.logger.debug("__init__: completed for %s", self.name)
 
   @property
-  def roachnames(self):
-      return list(self.roach.keys())
+  def bandwidth(self):
+    return self._bandwidth
 
+  @property
+  def firmware(self):
+    return self._firmware
+
+  @property
+  def bitstream(self):
+    return self._bitstream
+
+  @property
+  def roachnames(self):
+      names = list(self.roach.keys())
+      names.sort()
+      return names
+
+  @property
+  def freqlist(self):
+    return list(self.freqs(self.roachnames[0]))
+    
   @property
   def template(self):
     return self._template
@@ -132,6 +242,21 @@ class SAObackend(support.PropertiedClass):
     for roach in list(self.roach.keys()):
       self.roach[roach].quit()
 
+  def get_current_scans(self):
+    """
+    report the current scan number for each ROACH
+    """
+    scans = {}
+    for name in list(self.roach.keys()):
+      scans[name] = self.roach[name].scan
+    return scans
+
+  def get_current_accums(self):
+    accums = {}
+    for name in list(self.roach.keys()):
+      accums[name] = self.roach[name].spectrum_count
+    return accums
+
   def help(self):
     """
     """
@@ -147,39 +272,66 @@ class SAObackend(support.PropertiedClass):
     """
     self.callback = callback
     self.logger.debug("start: called for %d accumulations", n_accums)
+    self.set_integration(integration_time)
     for name in list(self.roach.keys()):
       self.logger.debug("start: starting %s", name)
       self.roach[name].max_count = n_accums
-    self.set_integration(integration_time)
+      self.roach[name].spectrum_count = -1 # so first one is zero
+
+  #@Pyro5.api.oneway
+  def last_spectra(self, dolog=True, squish=16):
+      """
+      Get the current spectrum from each ROACH
+
+      Returns a list of lists that is compatible with Google Charts LineChart
+
+      We cheat a little in assuming that each ROACH has the same scan and
+      spectrum numbers.
+
+      Arguments:
+        dolog - return log10 of data if True; negative number become 0
+        squish - number of channels to average
+      """
+      self.logger.debug("last_spectra: called")
+      if squish > 1:
+        pass
+      else:
+        # may not be 0 or negative
+        squish = 16
+      names = list(self.roach.keys())
+      names.sort()
+      titles = ["Frequency"] + names
+      npts = self.roach[names[0]].freqs.shape[0]/squish
+      freqs = get_freq_array(self.roach[names[0]].bandwidth, npts)
+      # data have a typical spreedsheet organization, one list per line
+      # this is the first column
+      spectra = freqs.reshape(npts,1) # converts from 1D to 2D array
+      # for each ROACH, one column for each ROACH
+      for name in names:
+          self.logger.debug("last_spectra: %s", name)
+          spectrum = self.roach[name].accum
+          # average over 'squish' channels
+          result = spectrum.reshape(spectrum.shape[0]/squish, squish)
+          result = result.mean(axis=1)
+          if dolog:
+            result = numpy.log10(result)
+            result[result==-numpy.inf]=0
+          column = result.reshape(npts,1)
+          spectra = numpy.append(spectra, column, axis=1)
+      final_list = [titles] + spectra.tolist()
+      #self.one_scan.cb({"table": final_list})
+      self.logger.debug("last_spectra: got %s", final_list[0:5])
+      return {"scan":   self.roach[names[0]].scan,
+              "record": self.roach[names[0]].spectrum_count,
+              "table":  final_list}
 
   def reset_scans(self):
     for name in self.roach:
       self.roach[name].scan = 0
-
+    
   # The following methods invoke individual ROACH methods.  This is to make
   # individual ROACHs accessible to the client.
   
-  @ROACH1.roach_name_adaptor
-  def firmware(self, roachname):
-    """
-    returns firmware loaded in specified ROACH
-    Example::
-      In [6]: k.firmware('roach2')
-      Out[6]: 'kurt_spec'
-    """
-    return self.roach[roachname].firmware
-
-  @ROACH1.roach_name_adaptor
-  def bandwidth(self, roachname):
-    """
-    returns the spectrometer bandwidth
-
-    Example::
-      In [3]: k.bandwidth('roach1')
-      Out[3]: 650
-    """
-    return self.roach[roachname].bandwidth
-
   @ROACH1.roach_name_adaptor
   def freqs(self, roachname):
     """
@@ -190,7 +342,31 @@ class SAObackend(support.PropertiedClass):
       Out[5]: array([  0.00000000e+00,   6.34765625e-01,   1.26953125e+00, ...,
                        6.48095703e+02,   6.48730469e+02,   6.49365234e+02])
     """
-    return self.roach[roachname].freqs
+    return list(self.roach[roachname].freqs)
+
+  @ROACH1.roach_name_adaptor
+  def get_firmware(self, roachname):
+    """
+    returns firmware loaded in specified ROACH
+    Example::
+      In [6]: k.get_firmware('roach2')
+      Out[6]: 'kurt_spec'
+
+    'firmware' is now an attribute, not a method 2019-06-25
+    """
+    return self.roach[roachname].firmware
+
+  @ROACH1.roach_name_adaptor
+  def get_bandwidth(self, roachname):
+    """
+    returns the spectrometer bandwidth
+
+    Example::
+      In [3]: k.get_bandwidth('roach1')
+      Out[3]: 650
+    'bandwidth' is now a property 2019-06-25
+    """
+    return self.roach[roachname].bandwidth
 
   @ROACH1.roach_name_adaptor
   def rf_gain_get(self, roachname, ADC=0, RF=0):
@@ -357,7 +533,7 @@ class SAObackend(support.PropertiedClass):
 
 #--  ------------------------------- SAOfwif------------------------------------
 
-@Pyro5.api.expose
+@Pyro5.server.expose
 class SAOfwif(MC.DeviceReadThread):
   """
   Class for one ROACH with SAO 32K spectrometer firmware
@@ -956,7 +1132,7 @@ class SAOfwif(MC.DeviceReadThread):
       return level      
 
 
-@Pyro5.api.expose
+@Pyro5.server.expose
 class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
   """
   Pyro server for the SAO back end
@@ -1086,7 +1262,7 @@ def main(server_cls):
         # print(server.feed_change(0, 0, 0))
         server.launch_server(
             ns=False,
-            objectId="APC",
+            objectId="backend",
             objectPort=50004,
             local=parsed.local,
             threaded=False
