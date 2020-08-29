@@ -14,81 +14,15 @@ import re
 import threading
 import time
 
-from watchdog.observers import Observer  
-from watchdog.events import PatternMatchingEventHandler
-
 from support.local_dirs import log_dir
 from MonitorControl import ActionThread
 from MonitorControl.BackEnds import Backend, get_freq_array
+from support.pyro import asyncio
 
 logger = logging.getLogger(__name__)
 
 max_spectra_per_scan = 120 # 1 h
 max_num_scans = 120 # 5 d
-
-class DiskMonitor(ActionThread):
-    """
-    Monitors HDF5 datafile for new spectra.
-  
-    New spectra aread and then passed to the combiner
-    """
-    def __init__(self, parent, roachname, filename, interval=1, queue=None):
-        """
-        Initialize an SAO HDF5 spectra disk file monitor
-        """
-        mylogger = logging.getLogger(logger.name+".DiskMonitor")
-        ActionThread.__init__(self, parent,
-                                    self.check_disk,
-                                    name=roachname)
-        self.name = roachname
-        self.filename = filename
-        self.interval = interval
-        self.queue = queue
-        self.logger = mylogger
-        self.logger.debug("__init__: done for %s",self.name)
-        
-    def check_disk(self):
-        """
-        """
-        while self.end_flag == False:
-          current_size = os.path.getsize(self.filename)
-          self.logger.debug("check_disk: %s size is %d", self.name, current_size)
-          self.logger.debug("check_disk: end flag is %s", self.end_flag)
-          self.logger.debug("check_disk: suspend is %s", self.thread_suspend)
-          self.logger.debug("check_disk: sleep is %s", self.thread_sleep)
-          self.logger.debug("check_disk: waiting %d s", self.interval)
-          #time.sleep(self.interval)
-          self.logger.debug("check_disk: wait done")
-          size = os.path.getsize(self.filename)
-          self.logger.debug("check_disk: %s size is now %d", 
-                            os.path.basename(self.filename), size)
-         # if there is a cue put the spectrum there
- 
-class MyHandler(PatternMatchingEventHandler):
-    patterns = ["*.h5py"]
-    def __init__(self):
-        PatternMatchingEventHandler.__init__(self)
-        self.logger = logging.getLogger(logger.name+".MyHandler")
-
-    def process(self, event):
-        """
-        event.event_type 
-            'modified' | 'created' | 'moved' | 'deleted'
-        event.is_directory
-            True | False
-        event.src_path
-            path/to/observed/file
-        """
-        # the file will be processed there
-        print(event.src_path, event.event_type)  # print now only for degug
-
-    def on_modified(self, event):
-        self.logger.debug("on_modified: called with %s", event)
-        self.process(event)
-
-    def on_created(self, event):
-        self.logger.debug("on_created: called with %s", event)
-        self.process(event)
 
 class SAOclient(Backend):
     """
@@ -134,7 +68,7 @@ class SAOclient(Backend):
         names are assigned in the same order as the ordered list of the names
         of the Processor instances.  Note that the order of the output names
         comes from their position in the list.
-observe_with
+
         @param name : unique name for the spectrometer
         @type  name : str
 
@@ -154,6 +88,7 @@ observe_with
             self.hardware = Pyro5.api.Proxy(uri)
             try:
                 self.hardware.__get_state__()
+                self.hardware._pyroRelease()
             except Pyro5.errors.CommunicationError as details:
                 mylogger.error("__init__: %s", details)
                 raise Pyro5.errors.CommunicationError("is the SAO spec server running?")
@@ -179,14 +114,18 @@ observe_with
           self.freqs = self.freqlist # MHz, any ROACH software will do
         else:
           self.freqs = get_freq_array(self.bandwidth,self.num_chan)
-        scans = {}
+        self.scans = {}
         if self.hardware:
-          # we need to know the current status of each ROACH
           self.logger.debug("__init__: %s", self.roachnames)
+          # callback handler
+          self.cb_receivers = {}
+          self.data_getters = {}
           for name in self.roachnames:
             self.logger.debug("__init__: init scans for %s", name)
-            scans[name] = {"done": False, "scan": None, "record": None}
-          self.scans = scans
+            self.scans[name] = {"done": False, "scan": None, "record": None}
+            self.cb_receiver[name] = asyncio.CallbackReceiver(parent=self)
+            self.data_getter[name] = threading.Thread(target=self.get_data, daemon=True)
+            self.data_getter[name].start()
           self .logger.debug("__init__: scans: %s", self.scans)
           # We want a data array with axes for frequency, roachnum, scan, record
           #   for every record of every scan we want an array like this
@@ -198,34 +137,13 @@ observe_with
           self.spectra_dict = {}
           # start a combiner thread
           self.init_combiner()
-          # start threads to monitor disk file size
-          #self.init_disk_monitors()
-          self.logger.debug("__init__: creating watchdog")
-          #self.observer = Observer()
-          #self.event_handler = MyHandler()
-          #self.observer.daemon = True
-          #self.logger.debug("__init__: scheduling watchdog handler")
-          #self.observer.schedule(self.event_handler, path='/usr/local/RA_data/HDF5/dss43/2019')
-          #self.logger.debug("__init__: starting watchdog")
-          #self.observer.start()
-          #self.logger.debug("__init__: waiting")
+          
     
-    def init_disk_monitors(self):
-        """
-        """
-        self.logger.debug("init_disk_monitors: entered")
-        self.datafilenames = self.hardware.get_datafile_names()
-        self.disk_monitor = {}
-        for roachname in self.roachnames:
-            self.disk_monitor[roachname] = DiskMonitor(
-                                        self,
-                                        roachname, 
-                                        self.datafilenames[roachname],
-                                        interval=1, 
-                                        queue=self.combinerQueue)
-            self.disk_monitor[roachname].daemon = True
-            self.disk_monitor[roachname].start()
-        self.logger.debug("init_disk_monitors: done")
+    def get_data(self, roach):
+        while True:
+          data = self.cb_receiver[roach].queue.get()
+          print( data[1]['device'], data[1]['time'] )
+        self.data_getter[roach].join()
 
     def init_combiner(self):
         """
@@ -273,7 +191,7 @@ observe_with
                       }
                       for name in self.scans}
 
-    # @async.async_method
+    @Pyro5.api.oneway
     def start_recording(self,
                         parent=None,
                         n_accums=max_spectra_per_scan,
@@ -481,24 +399,30 @@ observe_with
                             spectra.shape)
           # add other columns
           # does this column and record exist for all ROACHs?
-          self.logger.debug("combine_spectra: adding data for %s", self.roachnames)
+          self.logger.debug("combine_spectra: adding data for %s",
+                            self.roachnames)
           for name in self.roachnames:
             try:
               column_data = self.spectra_dict[scan][record][name]
-              self.logger.debug("combine_spectra: %s data is %s", name, self.spectra_dict[scan][record][name])
+              self.logger.debug("combine_spectra: %s data is %s", name,
+                                self.spectra_dict[scan][record][name])
               spectrum = numpy.array(column_data)
-              self.logger.debug("combine_spectra: %s spectrum is %s", name, spectrum)
-              self.logger.debug("combine_spectra: %s spectrum shape is %s", name, spectrum.shape)
+              self.logger.debug("combine_spectra: %s spectrum is %s",
+                                name, spectrum)
+              self.logger.debug("combine_spectra: %s spectrum shape is %s",
+                                name, spectrum.shape)
               spectra = numpy.append(spectra, spectrum.reshape(npts,1), 1)
-              self.logger.debug("combine_spectra: spectra shape is %s", spectra.shape)
+              self.logger.debug("combine_spectra: spectra shape is %s",
+                                spectra.shape)
             except ValueError as err:
               self.logger.error(
-                "combine_spectra: cannot combine data from ROACH {}: {}".format(name, err))
+                "combine_spectra:"
+                " cannot combine data from ROACH {}: {}".format(name, err))
           try:
             self.parent.start_spec_cb_handler({"type":   "data",
                                                "scan":   scan,
                                                "record": record,
-                                               "titles": [["Frequency"] + self.roachnames],
+                                    "titles": [["Frequency"] + self.roachnames],
                                                "data":   spectra.tolist()})
           except AttributeError:
             # no callback specified

@@ -174,7 +174,7 @@ class SAObackend(support.PropertiedClass):
     roachkeys.sort()
     self.rf_enabled = {}
     self.spectrum = {}
-    self.callback = None
+    self.callbacks = None
     for name in roachkeys:
       self.rf_enabled[name] = {}
       init = dict(parent=self,
@@ -199,6 +199,7 @@ class SAObackend(support.PropertiedClass):
     self.logger.debug("__init__: firmware is %s", self._firmware)
     self._bandwidth = self.get_bandwidth(roach)
     self._bitstream = self.roach[roach].bitstream
+    #self.cb_busy = False
     self.logger.debug("__init__: completed for %s", self.name)
 
   @property
@@ -270,13 +271,15 @@ class SAObackend(support.PropertiedClass):
 
     Adapted from SAObackend.start and SAObackend.action
     """
-    self.callback = callback
+    self.callbacks = callback # see below for the reason
     self.logger.debug("start: called for %d accumulations", n_accums)
     self.set_integration(integration_time)
     for name in list(self.roach.keys()):
       self.logger.debug("start: starting %s", name)
       self.roach[name].max_count = n_accums
       self.roach[name].spectrum_count = -1 # so first one is zero
+      # the following suggested by Irmen
+      # self.roach[name].callback = callback
 
   #@Pyro5.api.oneway
   def last_spectra(self, dolog=True, squish=16):
@@ -722,10 +725,17 @@ class SAOfwif(MC.DeviceReadThread):
       if isinstance(self.parent, SAOspecServer):
         # invoke the Pyro server's callback
         # self.parent.start_cb(("done", self.name, self.scan, UTtime))
-        if self.parent.callback:
+        if self.parent.callbacks:
+          #self.parent.callbacks[self.name]._pyroClaimOwnership()
           msg = {"type": "scan end", "device": self.name,
                  "time": UNIXtime, "scan": self.scan}
-          self.parent.callback.finished(self.parent.start.__name__, msg)
+          self.logger.debug("action: sending end scan: %s", msg)
+          #while self.parent.cb_busy == True:
+          #  time.sleep(0.00001)
+          #self.parent.cb_busy = True
+          self.parent.callbacks[self.name].finished(self.parent.start.__name__, msg)
+          #self.parent.cb_busy = False
+          #self.callback.finished(self.parent.start.__name__, msg) 
           self.logger.debug("action: callback finished")
       else:
         self.logger.info("action: %s scan %d done", self.name, self.scan)
@@ -739,10 +749,17 @@ class SAOfwif(MC.DeviceReadThread):
       #self.logger.debug("action: SAOspecServer: %s", SAOspecServer)
       if isinstance(self.parent, SAOspecServer):
         #self.parent.start_cb(("record", self.name, self.acc_count, accum))
-        if self.parent.callback:
+        if self.parent.callbacks:
+          #self.parent.callbacks[self.name]._pyroClaimOwnership()
           msg = {"type":"spectrum", "device": self.name, "time": UNIXtime,
-                 "number": self.acc_count, "data": accum}
-          self.parent.callback.finished(self.parent.start.__name__, msg)
+                 "number": self.acc_count, "data": list(accum)[:10]}
+          self.logger.debug("action: sending data: %s", msg)
+          #while self.parent.cb_busy == True:
+          #  time.sleep(0.00001)
+          #self.parent.cb_busy = True
+          self.parent.callbacks[self.name].finished(self.parent.start.__name__, msg)
+          #self.parent.cb_busy = False
+          #self.callback.finished(self.parent.start.__name__, msg)
           self.logger.debug("action: callback finished")
       elif self.scan:
         # not a server; store spectrum
@@ -956,12 +973,12 @@ class SAOfwif(MC.DeviceReadThread):
   def quit(self):
     """
     """
-    if self.parent is not None:
-      if hasattr(self.parent, "quit"):
-        self.parent.callback.finished(("file", self.data_file_obj.file.filename,
-                                      calendar.timegm(time.gmtime())))
+    #if self.parent is not None:
+    #  if hasattr(self.parent, "quit"):
+    #    self.parent.callback.finished(("file", self.data_file_obj.file.filename,
+    #                                  calendar.timegm(time.gmtime())))
     self.logger.info("quit: %s closed.", self.data_file_obj.file.filename)
-    self.data_file_obj.close()
+    #self.data_file_obj.close()
 
   def help(self):
     return SAOfwif.command_help
@@ -1233,7 +1250,7 @@ def main(server_cls):
     """
     starts logging, creates a server_cls object, launches the server object
     
-    
+    This is generic; not specific to the spectrometer server.
     """
     def _main():
         from support.logs import setup_logging
