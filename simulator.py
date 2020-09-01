@@ -94,6 +94,7 @@ import time
 import MonitorControl as MC
 import MonitorControl.BackEnds as BE
 import MonitorControl.BackEnds.ROACH1 as ROACH1
+import MonitorControl.BackEnds.ROACH1.combiner as combiner
 import MonitorControl.BackEnds.ROACH1.firmware_server as fws
 import Radio_Astronomy as RA
 import support
@@ -109,6 +110,24 @@ T_sys = 60
 
 ################################ classes #################################
 
+class RoachCombiner(combiner.DataCombiner):
+  """
+  subclass with meaningful ``process_data`` method
+  """
+  def __init__(self, parent=None, dsplist=None):
+    """
+    """
+    combiner.DataCombiner.__init__(self, dsplist=dsplist)
+    self.callback = None
+  
+  def process_data(self, *args):
+    if self.callback:
+      self.callback._pyroClaimOwnership()
+      self.callback.finished(*args)
+    else:
+      self.logger.error("process_data: no callback specified") 
+    
+    
 @Pyro5.server.expose
 class SAObackend(support.PropertiedClass):
   """
@@ -165,18 +184,23 @@ class SAObackend(support.PropertiedClass):
     self._template = template
     # firmware details
     firmware_server = fws.FirmwareServer(modulepath, paramfile)
-    #firmware_server.logger.setLevel(logging.INFO)
+    # ROACH firmware interface objects
     self.roach = {}
+    # make ordered list of ROACH names as keys
     for name in roachlist:
       # make unitialized ROACH
       roaches[name] = None
-    roachkeys = list(roaches.keys())
-    roachkeys.sort()
+    self._roachkeys = list(roaches.keys())
+    self._roachkeys.sort()
+    # input state of each ROACH
     self.rf_enabled = {}
+    # last spectrum from each ROACH
     self.spectrum = {}
-    self.callbacks = None
-    for name in roachkeys:
-      self.rf_enabled[name] = {}
+    # a combiner collects records from all the ROACH for client callback
+    self.callback = None
+    self.combiner = RoachCombiner(parent=self, dsplist=self._roachkeys)
+    for name in self._roachkeys:
+      # arguments to pass when initializing a SAOfwif object
       init = dict(parent=self,
                   roach=name,
                   template=self._template,
@@ -186,20 +210,20 @@ class SAObackend(support.PropertiedClass):
                   clock_synth=synth,
                   writer_queue=None,
                   TAMS_logging=TAMS_logging)
+      # initialize each ROACH
       self.roach[name] = SAOfwif(**init)
       self.roach[name].scan = 0
-      self.rf_enabled[name] = {
-        0: {0: None}
-      }
+      # each ROACH has one RF inputs of unknown state
+      self.rf_enabled[name] = {0: {0: None}}
+      # get the ROACH input state
       self.rf_state(name)
+      # ROACH spectra initially empty
       self.spectrum[name] = {}
     # convenience  -- assume all ROACHs the same
     roach = self.roachnames[0]
     self._firmware = self.get_firmware(roach)
-    self.logger.debug("__init__: firmware is %s", self._firmware)
     self._bandwidth = self.get_bandwidth(roach)
     self._bitstream = self.roach[roach].bitstream
-    #self.cb_busy = False
     self.logger.debug("__init__: completed for %s", self.name)
 
   @property
@@ -216,9 +240,7 @@ class SAObackend(support.PropertiedClass):
 
   @property
   def roachnames(self):
-      names = list(self.roach.keys())
-      names.sort()
-      return names
+    return self._roachkeys
 
   @property
   def freqlist(self):
@@ -271,15 +293,13 @@ class SAObackend(support.PropertiedClass):
 
     Adapted from SAObackend.start and SAObackend.action
     """
-    self.callbacks = callback # see below for the reason
+    self.combiner.callback = callback
     self.logger.debug("start: called for %d accumulations", n_accums)
     self.set_integration(integration_time)
     for name in list(self.roach.keys()):
       self.logger.debug("start: starting %s", name)
       self.roach[name].max_count = n_accums
       self.roach[name].spectrum_count = -1 # so first one is zero
-      # the following suggested by Irmen
-      # self.roach[name].callback = callback
 
   #@Pyro5.api.oneway
   def last_spectra(self, dolog=True, squish=16):
@@ -645,7 +665,7 @@ class SAOfwif(MC.DeviceReadThread):
                      write_to_disk   = False,
                      TAMS_logging    = False,
                      timing_report   = False):
-    mylogger = logging.getLogger(logger.name + ".SAObackend")
+    mylogger = logging.getLogger(logger.name + ".SAOfwif")
     mylogger.debug("__init__: initializing %s", roach)
     # the first argument (after 'self') is the object providing 'action'
     MC.DeviceReadThread.__init__(self, self, self.action, name=roach+"-reader",
@@ -686,17 +706,19 @@ class SAOfwif(MC.DeviceReadThread):
     self.logger.debug("initialize_roach: entered for %s", self.name)
     # FFT shift comes from firmware spreadsheet
     self.fft_shift_set(self.fft_shift)
-    self.logger.info("initialize_roach: fft shift = %s", bin(self.fft_shift))
+    self.logger.info("initialize_roach: %s fft shift = %s",
+                     self.name, bin(self.fft_shift))
     # default gain is 10 dB
     self.RFchannel[0].rf_gain_set(RF_gain)
     self.get_gains() # allows for multiple channels
-    self.logger.info("initialize_roach: %4.1f dB gain enabled is %s",
-                     self.gains[RFid]['gain'], self.gains[RFid]['enabled'])
+    self.logger.info("initialize_roach: %s has %4.1f dB gain; enabled is %s",
+                     self.name, self.gains[RFid]['gain'], 
+                     self.gains[RFid]['enabled'])
     # default integration time per accumulation is 1 sec
     self.integr_time_set(integr_time)
     self.ctrl_set(flasher_en=False, cnt_rst='pulse', clr_status='pulse')
-    self.logger.info("initialize_roach: %d accumulations acquired",
-                     self.get_accum_count())
+    self.logger.info("initialize_roach: %d accumulations acquired from %s",
+                     self.get_accum_count(), self.name)
     self.get_gains()
 
   def action(self):
@@ -711,8 +733,9 @@ class SAOfwif(MC.DeviceReadThread):
     spectra equals the requested number, it stops and reports.
     """
     self.acc_count += 1
-    self.logger.debug("action: %s acc_count=%d, max_count=%d scan=%d",
-                      self.name, self.acc_count, self.max_count, self.scan)
+    self.logger.debug(
+               "action: entered for %s with acc_count=%d, max_count=%d scan=%d",
+               self.name, self.acc_count, self.max_count, self.scan)
     UNIXtime = time.time()+time.altzone
     if self.acc_count > self.max_count:
       # got all spectra for this scan
@@ -721,55 +744,31 @@ class SAOfwif(MC.DeviceReadThread):
       # requested number of integrations (accumulations) is done
       # increment scan
       self.scan += 1
-      self.parent.spectrum[self.name][self.scan] = []
-      if isinstance(self.parent, SAOspecServer):
-        # invoke the Pyro server's callback
-        # self.parent.start_cb(("done", self.name, self.scan, UTtime))
-        if self.parent.callbacks:
-          #self.parent.callbacks[self.name]._pyroClaimOwnership()
-          msg = {"type": "scan end", "device": self.name,
-                 "time": UNIXtime, "scan": self.scan}
-          self.logger.debug("action: sending end scan: %s", msg)
-          #while self.parent.cb_busy == True:
-          #  time.sleep(0.00001)
-          #self.parent.cb_busy = True
-          self.parent.callbacks[self.name].finished(self.parent.start.__name__, msg)
-          #self.parent.cb_busy = False
-          #self.callback.finished(self.parent.start.__name__, msg) 
-          self.logger.debug("action: callback finished")
-      else:
-        self.logger.info("action: %s scan %d done", self.name, self.scan)
+      msg = {"type": "scan end", 
+             "name": self.name,
+             "time": UNIXtime, 
+             "scan": self.scan,
+             "record": 0,
+             "data": None}
+      self.logger.debug("action: end to combiner: %s", msg.keys())
+      self.parent.combiner.inqueue.put(msg)
+      self.logger.info("action: %s scan %d done", self.name, self.scan)
       # start a new scan
       self.acc_count = 0  # reset counter
     else:
       # Get another integration (accumulation)
       #    this blocks until the spectrum is done
       accum = self.get_next_spectrum()
-      #self.logger.debug("action: self:          %s", self.parent)
-      #self.logger.debug("action: SAOspecServer: %s", SAOspecServer)
-      if isinstance(self.parent, SAOspecServer):
-        #self.parent.start_cb(("record", self.name, self.acc_count, accum))
-        if self.parent.callbacks:
-          #self.parent.callbacks[self.name]._pyroClaimOwnership()
-          msg = {"type":"spectrum", "device": self.name, "time": UNIXtime,
-                 "number": self.acc_count, "data": list(accum)[:10]}
-          self.logger.debug("action: sending data: %s", msg)
-          #while self.parent.cb_busy == True:
-          #  time.sleep(0.00001)
-          #self.parent.cb_busy = True
-          self.parent.callbacks[self.name].finished(self.parent.start.__name__, msg)
-          #self.parent.cb_busy = False
-          #self.callback.finished(self.parent.start.__name__, msg)
-          self.logger.debug("action: callback finished")
-      elif self.scan:
-        # not a server; store spectrum
-        self.parent.spectrum[self.name][self.scan].append(accum)
-        self.logger.debug("action: %s got integration %d", self.name,
+      self.logger.debug("action: %s got integration %d", self.name,
                           self.acc_count)
-        self.logger.debug("action: accum type is %s", type(accum))
-      else:
-        # scan 0 is not a scan
-        time.sleep(0.010)
+      msg = {"type":"spectrum", 
+             "name": self.name, 
+             "time": UNIXtime,
+             "scan": self.scan, 
+             "record": self.acc_count, 
+             "data": list(accum)}
+      self.logger.debug("action: spectrum to combiner: %s", msg.keys())
+      self.parent.combiner.inqueue.put(msg)
         
   def calibrate(self):
     """
@@ -794,6 +793,8 @@ class SAOfwif(MC.DeviceReadThread):
     Initiate the sync pulses
     """
     self.end_integr = time.time() + time.altzone + self.integr_time
+    self.logger.debug("sync_start: %s will stop at %s", 
+                      self.name, self.end_integr)
     self.resume_thread()
     
   def fft_shift_set(self, fft_shift_schedule=int(0b0000000000000000)):
@@ -963,7 +964,7 @@ class SAOfwif(MC.DeviceReadThread):
       end
     """
     # get the current value
-    accum_cnt = self.get_accum_count()
+    #accum_cnt = self.get_accum_count()
     done = False
     while time.time() + time.altzone < self.end_integr:  # test at the usec level
       pass
@@ -1077,8 +1078,9 @@ class SAOfwif(MC.DeviceReadThread):
       Get the gain of the RF stage; sets attribute rf_gain
       """
       self.rf = {"enabled": self.rf_enabled, "gain": self.rf_gain}
-      self.logger.info("rf_get_gain: %s gain[0] = %f, enabled = %s",
-                        self.name, self.rf_gain, self.rf_enabled)
+      self.logger.info("rf_get_gain: %s %s gain[0] = %f, enabled = %s",
+                       self.parent.name, self.name, self.rf_gain, 
+                       self.rf_enabled)
 
     def rf_gain_set(self, gain=0):
       """
@@ -1086,8 +1088,8 @@ class SAOfwif(MC.DeviceReadThread):
 
       For KATADC boards. KATADC's valid range is -11.5 to 20dB.
       """
-      self.logger.debug("rf_gain_set: setting RF%d gain to %5.1f",
-                        self.RFnum, gain)
+      self.logger.debug("rf_gain_set: setting %s RF%d gain to %5.1f",
+                        self.name, self.RFnum, gain)
       self.rf_gain = gain
       self.rf['gain'] = gain
       self.rf_gain_get()
@@ -1116,10 +1118,11 @@ class SAOfwif(MC.DeviceReadThread):
       """
       Signal level into the ADC in various units.
       """
-      self.logger.debug("get_ADC_input: called for RF %d", self.RFnum)
+      self.logger.debug("get_ADC_input: called for %s RF %d",
+                        self.parent.name, self.RFnum)
       samples = self.get_ADC_snap(now=True)
       if samples is None:
-        self.logger.warning("get_ADC_input failed to get samples")
+        self.logger.warning("get_ADC_input: failed to get samples")
         return None
       else:
         level = {}
@@ -1183,9 +1186,11 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
                               roachlist=roachlist,
                               template=template,
                               TAMS_logging=False)
+    self.logger.debug("__init__: setting integration time to %s", int_time)
     self.set_integration(int_time)
     self.logger = mylogger
     self.run = True
+    self.logger.debug("__init__: done")
 
   def roaches_available(self):
     """
@@ -1272,7 +1277,7 @@ def main(server_cls):
                 server_cls.__name__, timestamp
             )
         )
-        setup_logging(logLevel=level, logfile=logfile)
+        setup_logging(logLevel=level, logfile=None)
         server = server_cls(
            name="test"
         )
