@@ -17,6 +17,9 @@ import MonitorControl as MC
 
 logger = logging.getLogger(__name__)
 
+def nowgmt():
+  return time.time()+ time.altzone
+
 class DataCombiner(MC.ActionThread):
   """
   class to combine spectra from parallel processors
@@ -41,10 +44,7 @@ class DataCombiner(MC.ActionThread):
     MC.ActionThread.__init__(self, self, self.get_data, name="combiner")
     self.logger = mylogger
     self.inqueue = queue.Queue()
-    self.scans = {}
-    for dsp in self.dsplist:
-      self.logger.debug("__init__: init scans for %s", dsp)
-      self.scans[dsp] = {"done": False, "scan": None, "record": None}
+    self.timedata = {}
     self.spectra_dict = {}
     self.daemon = True
     self.start()
@@ -55,7 +55,6 @@ class DataCombiner(MC.ActionThread):
     """
     while True:
       data = self.inqueue.get()
-      self.logger.debug("get_data: got %s", data.keys())
       self.combine_data(data)
     self.join()
 
@@ -66,46 +65,52 @@ class DataCombiner(MC.ActionThread):
     name = result['name']
     scan = result['scan']
     record = result["record"]
-    self.logger.debug("combine_data: %s scan %d record %d", name, scan, record)
-    self.scans[name]["record"] = record
-    rec_time = calendar.timegm(time.gmtime())
-    self.scans[name]["time"] = rec_time
-    data = result["data"]
-    if data:
-      self.logger.debug("combine_data: data: %s", data[:10]) 
-    # create spectra_dict[scan], if needed
-    if scan in self.spectra_dict:
-      # not needed
-      pass
-    elif list(self.spectra_dict.keys()) == []:
-      # empty dict.  Creat one with the current scan
-      self.spectra_dict = {scan: {}}
+    rectime = result["time"]
+    self.logger.debug("combine_data: %s %s %s %s entered", 
+                      name, scan, nowgmt(), record)
+    if result['type'] == 'spectrum':
+      data = result["data"]
+      #self.logger.debug("combine_data: %s got: %s", result['name'], data[:10]) 
+      # create spectra_dict[scan], if needed
+      if scan in self.spectra_dict:
+        # not needed
+        pass
+      elif list(self.spectra_dict.keys()) == []:
+        # empty dict.  Creat one with the current scan
+        self.spectra_dict = {scan: {}}
+        self.timedata = {scan: {}}
+      else:
+        # add this scan to the dict
+        self.spectra_dict[scan] = {}
+        self.timedata[scan] = {}
+      # create spectra_dict[scan][record], if needed
+      if record in self.spectra_dict[scan]:
+        # not needed
+        pass
+      else:
+        # create an empty dict for this record
+        self.spectra_dict[scan][record] = {}
+        self.timedata[scan][record] = {}
+      # add the data for this ROACH to this record
+      self.spectra_dict[scan][record][name] = data
+      self.timedata[scan][record][name] = rectime
+      if self.spectra_dict[scan][record][name]:
+        self.logger.debug("combine_data: %s %s %s stored %s", 
+                          name, scan, nowgmt(), record)
+      else:
+        self.logger.debug("combine_data: %s %s %s new scan",
+                          name, scan, nowgmt())
+      # Are all the ROACHs' data in the spectraDict structure? If so, output 
+      this_record = self.spectra_dict[scan][record]
+      if len(this_record) == len(self.dsplist):
+        this_time = self.timedata[scan][record]
+        msg = {"scan": scan, "record": record, "time": this_time,
+               "type": "data", "data": this_record}
+        self.process_data(msg)
     else:
-      # add this scan to the dict
-      self.spectra_dict[scan] = {}
-    # create spectra_dict[scan][record], if needed
-    if record in self.spectra_dict[scan]:
-      # not needed
-      pass
-    else:
-      # create an empty dict for this record
-      self.spectra_dict[scan][record] = {}
-    # add the data for this ROACH to this record
-    self.spectra_dict[scan][record][name] = data
-    if self.spectra_dict[scan][record][name]:
-      self.logger.debug("combine_data: %s data is %s", name,
-                      self.spectra_dict[scan][record][name][:10])
-    else:
-      self.logger.debug("combine_data: %s data is done", name)
-    # Are all the ROACHs' data in the spectraDict structure? If so, output 
-    self.logger.debug("combine_data: scan %d record %d keys: %s",
-                     scan, record, list(self.spectra_dict[scan][record].keys()))
-    this_record = self.spectra_dict[scan][record]
-    if len(this_record) == len(self.dsplist):
-      msg = {"scan": scan, "record": record, "time": rec_time,
-             "data": this_record}
-      self.process_data(msg)
-  
+      self.logger.debug("combine_data: %s received %s message", name,
+                        result['type'])
+                        
   def process_data(self, data):
     """
     what to do with the data; provided by subclass

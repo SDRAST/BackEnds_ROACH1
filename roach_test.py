@@ -31,5 +31,10 @@ if __name__ == "__main__":
       pass
   
   cb_receiver = CallbackReceiver()
-  hardware.start(n_accums=3, integration_time=3, callback=cb_receiver)
-
+  hardware.start(n_accums=30, integration_time=10, callback=cb_receiver)
+  while True:
+    got = cb_receiver.queue.get()
+    if got:
+      print(got['scan'], got['record'], got['time'])
+    else:
+      print("empty result")

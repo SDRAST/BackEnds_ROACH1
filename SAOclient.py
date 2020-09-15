@@ -11,11 +11,10 @@ import os
 import Pyro5
 import queue
 import re
-import threading
 import time
 
 from support.local_dirs import log_dir
-from MonitorControl import ActionThread
+#from MonitorControl import ActionThread
 from MonitorControl.BackEnds import Backend, get_freq_array
 from support.pyro import asyncio
 
@@ -24,12 +23,51 @@ logger = logging.getLogger(__name__)
 max_spectra_per_scan = 120 # 1 h
 max_num_scans = 120 # 5 d
 
+
+class CallbackHandler(asyncio.CallbackReceiver):
+    """
+    Processor for returned data
+    """
+    def __init__(self, parent=None, queue=None):
+        """
+        """
+        if parent:
+            pass
+        else:
+            raise RuntimeError("CallbackHandler needs a parent")
+        mylogger = logging.logger(logger.name+".CallbackHandler")
+        asyncio.CallbackReceiver.__init__(self, parent=parent, queue=queue)
+        self.logger = mylogger
+        
+    def finished(self, msg):
+        """
+        replace superclass method, which just puts data on queue
+        """
+        if type(res) != dict:
+          self.logger.error("finished: cannot handle type %s data", type(res))
+          return None
+        else:
+          # send a messages to the browser: 
+          #   {"entered": True, "time": time.strftime("%Y/%j %H:%M:%S", time.gmtime())}
+          #   {"type": "start", "scan": res["scan"], "record": res["record"]}
+          # set some DSSServer attributes about the ROACH input signals
+          self.parent.parent.get_signals()
+          # decrement the spectrum count
+          self.parent.parent.spectra_left -= 1
+          self.logger.debug("finished: %d spectra left", self.spectra_left)
+          # put the data on the FITS queue
+          self.parent.parent.FITSqueue.put(res)
+          self.logger.debug("finished: data put on FITS queue")
+
 class SAOclient(Backend):
     """
-    SAO 32K-channel spectrometer
+    SAO 32K-channel spectrometer client
+    
+    This is a DSSServer attribute item ``equipment['Backend']``
 
-    consists of four ROACH boards, each running the same firmware. It takes in
-    four IF class signals and outputs digital data (spectra) for each channel.
+    This backend consists of four ROACH boards, each running the same firmware.
+    It takes in four IF class signals and outputs digital data (spectra) for
+    each channel.
 
     The details of this class depend on the SAO spectrometer firmware in the
     ROACH processors.
@@ -38,8 +76,6 @@ class SAOclient(Backend):
 
     Attributes::
       bandwidth:
-      combiner:
-      combinerQueue:
       freqs:
       hardware:
       last_scan:
@@ -118,14 +154,10 @@ class SAOclient(Backend):
         if self.hardware:
           self.logger.debug("__init__: %s", self.roachnames)
           # callback handler
-          self.cb_receivers = {}
-          self.data_getters = {}
+          self.cb_receiver = asyncio.CallbackReceiver(parent=self)
           for name in self.roachnames:
             self.logger.debug("__init__: init scans for %s", name)
             self.scans[name] = {"done": False, "scan": None, "record": None}
-            self.cb_receiver[name] = asyncio.CallbackReceiver(parent=self)
-            self.data_getter[name] = threading.Thread(target=self.get_data, daemon=True)
-            self.data_getter[name].start()
           self .logger.debug("__init__: scans: %s", self.scans)
           # We want a data array with axes for frequency, roachnum, scan, record
           #   for every record of every scan we want an array like this
@@ -134,28 +166,8 @@ class SAOclient(Backend):
           #   So we know that this is always a 5x32768 array
           #   I guess a dict is the easiest way to get the scan and record
           #   spectra_dict[scan][record] = data_array
-          self.spectra_dict = {}
-          # start a combiner thread
-          self.init_combiner()
-          
+          self.spectra_dict = {}          
     
-    def get_data(self, roach):
-        while True:
-          data = self.cb_receiver[roach].queue.get()
-          print( data[1]['device'], data[1]['time'] )
-        self.data_getter[roach].join()
-
-    def init_combiner(self):
-        """
-        combines records from different ROACHs into one packet
-        """
-        self.logger.debug("init_combiner: called")
-        self.combinerQueue = queue.Queue()
-        self.combiner = ActionThread(self, self.combine_spectra,
-                                           name="combiner")
-        self.combiner.daemon = True
-        self.combiner.start()
-
     def __getattr__(self, name):
         """
         This passes unknown method and attribute requests to the server
@@ -163,6 +175,7 @@ class SAOclient(Backend):
         self.logger.debug("__getattr__: checking hardware for '%s'",
                           name)
         if self.hardware is not None:
+            self.hardware._pyroClaimOwnership()
             return getattr(self.hardware, name)
 
     @property
@@ -198,75 +211,19 @@ class SAOclient(Backend):
                         integration_time=5.0):
         """
         start a series of scans
+        
+        Scans are retrieved with the callback cb_receiver.finished() invokes
+        by the server.  The data are put on cb_receiver.queue.
         """
         self.parent = parent
         self.integration = integration_time
         self.logger.debug("start_recording: scan of {} accums".format(n_accums))
         self.logger.debug("start_recording: integration time: %s", integration_time)
+        self.hardware._pyroClaimOwnership()
         self.hardware.start(n_accums=n_accums,
                             integration_time=integration_time,
-                            cb=self.start_handler)
+                            callback=self.cb_receiver)
         self.logger.debug("start_recording: started")
-
-    def new_start_recording(self,
-                        parent=None,
-                        n_accums=max_spectra_per_scan,
-                        integration_time=5.0):
-        """
-        start a series of scans
-        """
-        self.parent = parent
-        self.logger.debug("start_recording: scan of {} accums".format(n_accums))
-        self.logger.debug("start_recording: integration time: %s", integration_time)
-        self.hardware.set_integration(integration_time)
-        for roachname in self.roachnames:
-          self.logger.debug("start_recording: %s handler id is %s",
-                            roachname, id(self.start_roach_handler[roachname]))
-          self.hardware.start_roach(roachname,
-                                    n_accums=n_accums,
-                                    cb=self.start_roach_handler[roachname])
-        self.logger.debug("start_recording: started")
-
-    @Pyro5.api.callback
-    def inner_handler(self, res):
-        """
-        There is one of these for each ROACH
-        """
-        self.logger.debug("start_roach_handler: invoked for args=%s", list(res.keys()))
-        self.logger.debug("start_roach_handler: handler ID=%s", id(self))
-        if type(res) == dict:
-            # callback messages always have a name and a scan
-            name = res['name']
-            #if name != self.rname:
-            #  raise RuntimeError("start_roach_handler['"+self.rname+"'] got data for "+name)
-            scan = res['scan']
-            self.scans[name]["scan"] = scan
-            if res["type"] == "done":
-                # Signal the receiving software that all records are done
-                self.scans[name]["done"] = res["type"]
-                self.scans[name]["record"] = None
-                self.scans[name]["time"] = res["time"]
-                self.logger.debug("start_roach_handler: %s scan %d finished", name, scan)
-            elif res["type"] == "record":
-                # Process a record and add it to the current record structure
-                self.scans[name]["done"] = False
-                #self.combinerQueue.put(res)
-                self.logger.debug("start_roach_handler: %s scan %d record %d put on queue",
-                                  name, scan, res['record'])
-        else:
-            raise TypeError(
-                ("start_roach_handler: input is not a dict but type {}").format())
-    # end of def inner_handler
-
-
-    #@async.async_callback
-    def startRoachHandler(self, rname):
-      """
-      We need a method in which the ROACH name is not an argument
-      """
-      self.logger.debug("startRoachHandler: %s handler id is %s", rname, id(self.inner_handler))
-      #self.rname = rname
-      return self.inner_handler
 
     @Pyro5.api.callback
     def start_handler(self, res):
@@ -305,134 +262,11 @@ class SAOclient(Backend):
                 record = res["record"]
                 # Process a record and add it to the current record structure
                 self.scans[name]["done"] = False
-                self.combinerQueue.put(res)
                 self.logger.debug("start_handler: %s scan %d record %d put on queue",
                                   name, scan, record)
         else:
             raise TypeError(
                 ("start_handler: input is not a dict but type {}").format())
-
-    def get_spectrum_from_file(self, scan, res):
-        """
-        """
-        datafile = res['file']
-        self.logger.debug('get_spectrum_from_file: data file is %s',
-                          datafile)
-        busy = True
-        topgroup = None
-        while busy:
-            try:
-                topgroup = h5py.File(datafile, 'r')
-                busy = False
-            except IOError as e:
-                if re.search("errno = 11", str(e)):
-                    print((datetime.datetime.now().strftime("%H:%M:%S.%f > ") + \
-                          datafile+' is busy; waiting...'))
-                    time.sleep(0.1)
-                else:
-                    pass
-            except Exception as e:
-                self.logger.error("start_handler: "+str(e))
-                raise IOError('open '+datafile+' failed due to '+
-                                                          os.strerror(e.errno))
-                busy = False
-        if topgroup:
-          scangroup = topgroup["%03d" % scan] # selects scan from file
-          record = res["record"]
-          self.logger.debug("get_spectrum_from_file: getting record %s", record)
-          # DEFERRED: this should be checked gainst the value brought in
-          rectime = scangroup['timestamp'][record]
-          self.logger.debug("get_spectrum_from_file: record time is %s", rectime)
-          # add the data back in
-          res['data'] = scangroup['data'][record] # selects record from scan
-          self.logger.debug("get_spectrum_from_file: data is %s", res['data'])
-          topgroup.close()
-        return res
-
-    def combine_spectra(self):
-        """
-        combine ROACH recors into a spectrometer record
-        """
-        result = self.combinerQueue.get()
-        name = result['name']
-        scan = result['scan']
-        record = result["record"]
-        self.logger.debug("combine_spectra: %s scan %d record %d", name, scan, record)
-        self.scans[name]["record"] = record
-        self.scans[name]["time"] = calendar.timegm(time.gmtime())
-        result = self.get_spectrum_from_file(scan, result)
-        self.logger.debug("combine_spectra: retrieved %s", result)
-        data = result["data"]
-        self.logger.debug("combine_spectra: data: %s", data) 
-        
-        # create spectra_dict[scan], if needed
-        if scan in self.spectra_dict:
-          # not needed
-          pass
-        elif list(self.spectra_dict.keys()) == []:
-          # empty dict.  Creat one with the current scan
-          self.spectra_dict = {scan: {}}
-        else:
-          # add this scan to the dict
-          self.spectra_dict[scan] = {}
-        # create spectra_dict[scan][record], if needed
-        if record in self.spectra_dict[scan]:
-          # not needed
-          pass
-        else:
-          # create an empty dict for this record
-          self.spectra_dict[scan][record] = {}
-        # add the data for this ROACH to this record
-        self.spectra_dict[scan][record][name] = data
-        self.logger.debug("combine_spectra: %s data is %s", name, self.spectra_dict[scan][record][name])
-        # Is this record complete? Are all the ROACHs' data in the
-        # spectraDict structure? If so return structure
-        self.logger.debug("combine_spectra: scan %d record %d keys: %s",
-                          scan, record, list(self.spectra_dict[scan][record].keys()))
-        if len(self.spectra_dict[scan][record]) == len(self.roachnames):
-          # yes
-          # now make the 2D list of lists
-          npts = len(self.freqs)
-          # first column
-          spectra = numpy.array(self.freqs).reshape(npts,1)
-          self.logger.debug("combine_spectra: initialize spectra: shape is %s",
-                            spectra.shape)
-          # add other columns
-          # does this column and record exist for all ROACHs?
-          self.logger.debug("combine_spectra: adding data for %s",
-                            self.roachnames)
-          for name in self.roachnames:
-            try:
-              column_data = self.spectra_dict[scan][record][name]
-              self.logger.debug("combine_spectra: %s data is %s", name,
-                                self.spectra_dict[scan][record][name])
-              spectrum = numpy.array(column_data)
-              self.logger.debug("combine_spectra: %s spectrum is %s",
-                                name, spectrum)
-              self.logger.debug("combine_spectra: %s spectrum shape is %s",
-                                name, spectrum.shape)
-              spectra = numpy.append(spectra, spectrum.reshape(npts,1), 1)
-              self.logger.debug("combine_spectra: spectra shape is %s",
-                                spectra.shape)
-            except ValueError as err:
-              self.logger.error(
-                "combine_spectra:"
-                " cannot combine data from ROACH {}: {}".format(name, err))
-          try:
-            self.parent.start_spec_cb_handler({"type":   "data",
-                                               "scan":   scan,
-                                               "record": record,
-                                    "titles": [["Frequency"] + self.roachnames],
-                                               "data":   spectra.tolist()})
-          except AttributeError:
-            # no callback specified
-            self.logger.info("combine_spectra: start_spec_cb_handler not called")
-          self.logger.debug("combine_spectra: data sent")
-        else:
-          # self.parent.start_spec_cb_handler("hello")
-
-          self.logger.info("combine_spectra: scan %d record %d has only %s",
-                              scan, record, list(self.spectra_dict[scan][record].keys()))
 
     def help(self, kind=None):
         """
@@ -447,7 +281,6 @@ class SAOclient(Backend):
     def stop_recording(self):
         """
         """
-        self.combiner.terminate()
         for roachname in self.roachnames:
             self.disk_monitor[roachname].terminate()
 

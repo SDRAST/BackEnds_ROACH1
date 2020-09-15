@@ -2,17 +2,17 @@
 """
 This simulates a multi-ROACH backend using the TAMS firmare.
 
-The basic program behavior is to create a 'SAObackend' object.  This is the
-parent for 'SAOfwif' (SAO firmware interface) objects, one for each ROACH. The
-'SAOfwif' class is a subclass of the 'DeviceReadThread' class.
+The basic program behavior is to create a ``SAObackend`` object.  This is the
+parent for ``SAOfwif`` (SAO firmware interface) objects, one for each ROACH. The
+``SAOfwif`` class is a subclass of the ``DeviceReadThread`` class.
 
-Each 'SAOfwif' object has one or more 'Channel' objects (one for ROACH1, four
-for ROACH2) which convert IF signals into 32K power spectra.
+Each ``SAOfwif`` object has one or more ``Channel`` objects (one for ROACH1, 
+four for ROACH2) which convert IF signals into 32K power spectra.
 
-Because conversion to 4-channel firmware is pending, a number of 'SAOfwif'
-methods should be eventually converted to 'SAOfwif.Channel' methods.
+Because conversion to 4-channel firmware is pending, a number of ``SAOfwif``
+methods should be eventually converted to ``SAOfwif.Channel`` methods.
 
-Each 'SAOfwif' object initializes its channel(s) and simulates the ROACH's
+Each ``SAOfwif`` object initializes its channel(s) and simulates the ROACH's
 firmware initialization which consists of::
   * setting the FFT shift register,
   * setting the gain of the RF sections of the ADC channels,
@@ -22,24 +22,23 @@ firmware initialization which consists of::
   * immediately suspends the thread,
   * sets the scan number to 1.
 
-The 'SAObackend' method 'start' is invoked by a client. For each ROACH it::
+The ``SAObackend'``method ``start()`` is invoked by a client. For each ROACH it::
   * resumes the thread,
   * invokes the client's callback handler to provide the start time,
-  * sets the accumulation time to zero.
+  * sets the number of accumulated spectra to zero.
 
-The 'SAOfwif' method 'action' increments the number of accumulations and
+The ``SAOfwif`` method ``action()`` increments the number of accumulations and
 checks to see if it exceeds exceeds the specified number of accumulations for
 a scan.  If not it::
   * waits for the accumulation to be completed,
-  * invokes the callback to tell the client that a new accumulation is done
-  * writes the accumulation (spectrum) to the datafile.
+  * puts the accumulation (spectrum) on the combiner queue.
+  
 If the number of accumulations exceeds the specified maximum it::
-  * invokes the callback to say that a scan is finished,
   * suspends the threat,
   * sets the number of accumulations to 0,
   * increments the scan number.
 
-Note therefore that a 'scan' consists of some specified number of accumulations
+Note therefore that a scan consists of some specified number of accumulations
 (integrations) each of which is written as a record, that is, as a row in a 2D
 numpy array.  It is the job of the client to start a new scan which resumes the
 thread.
@@ -47,23 +46,27 @@ thread.
 
 *Scan and Record Numbers*
 
-Scan and record numbers are both three digit strings starting with '000'. These
-are used as names for the groups in the HDF5 hierarchy.  Each ROACH has its own
-copy of the scan number. Record numbers are initialized to 0 when the SAOfwif
-object is created.  The scan numbers are updated in the SAObackend action()
-method when a scan is completed. (It's better to think of action() as a method
-which the SAOfwif parent provides.)
+Scan and record numbers are integers or three digit strings starting with "001". 
+Each ROACH has its own copy of the scan number. 
+
+Record numbers are initialized to 0 when the SAOfwif object is created. It is 
+incremented each time ``action()`` is entered. 
+
+Scan numbers are initialized as 0.  The The scan numbers are updated in the 
+``SAObackend`` method ``action()`` when a scan is completed. (It's better to 
+think of ``action()`` as an ``SAOfwif`` method provided by the parent 
+``SAObackend``.)
 
 *Metadata*
 
 The SAOfwif object creates an HDF5 file when it is initialised. The firmware
 register data which do not change are attrs of the top level of the HDF5
-hierarchy. The SAObackend method 'start(N)' will start a new scan of N records
+hierarchy. The SAObackend method ``start(N)`` will start a new scan of N records
 for each ROACH. Scans are at the second level of the HDF5 hierarchy. The attrs
 of the scan level of the file are those firmware registers which do not change
 during a scan. Each record is written to disk as it is acquired. The attrs of
 the record level are the register values which change all the time, and also
-'time' in seconds.
+time in seconds.
 
 Example
 =======
@@ -102,12 +105,16 @@ import support.local_dirs
 import support.pyro.pyro5_server
 
 logger = logging.getLogger(__name__)
+fws.module_logger.setLevel(logging.WARNING)
 
 modulepath = os.path.dirname(os.path.abspath(__file__))
 paramfile = "model_params.xlsx"
 max_spectra_per_scan = 120 # 1 h at 5 s per spectrum
 T_sys = 60
 
+def nowgmt():
+  return time.time()+ time.altzone
+  
 ################################ classes #################################
 
 class RoachCombiner(combiner.DataCombiner):
@@ -116,17 +123,19 @@ class RoachCombiner(combiner.DataCombiner):
   """
   def __init__(self, parent=None, dsplist=None):
     """
+    initialize a DataCombiner
     """
     combiner.DataCombiner.__init__(self, dsplist=dsplist)
     self.callback = None
   
-  def process_data(self, *args):
+  def process_data(self, msg):
     if self.callback:
+      # claim method from another thread
       self.callback._pyroClaimOwnership()
-      self.callback.finished(*args)
+      # invoke callback's method
+      self.callback.finished(msg)
     else:
       self.logger.error("process_data: no callback specified") 
-    
     
 @Pyro5.server.expose
 class SAObackend(support.PropertiedClass):
@@ -208,7 +217,6 @@ class SAObackend(support.PropertiedClass):
                   firmware_key='sao_spec',
                   roach_log_level=logging.INFO,
                   clock_synth=synth,
-                  writer_queue=None,
                   TAMS_logging=TAMS_logging)
       # initialize each ROACH
       self.roach[name] = SAOfwif(**init)
@@ -293,13 +301,16 @@ class SAObackend(support.PropertiedClass):
 
     Adapted from SAObackend.start and SAObackend.action
     """
-    self.combiner.callback = callback
     self.logger.debug("start: called for %d accumulations", n_accums)
+    self.combiner.callback = callback
     self.set_integration(integration_time)
     for name in list(self.roach.keys()):
       self.logger.debug("start: starting %s", name)
+      if self.roach[name].scan == 0:
+        self.roach[name].scan = 1
       self.roach[name].max_count = n_accums
-      self.roach[name].spectrum_count = -1 # so first one is zero
+      self.roach[name].spectrum_count = 0 # so first one is '1'
+      self.roach[name].sync_start()
 
   #@Pyro5.api.oneway
   def last_spectra(self, dolog=True, squish=16):
@@ -563,7 +574,7 @@ class SAOfwif(MC.DeviceReadThread):
 
   Attributes::
   
-    acc_count - current accumulation number
+    spectrum_count - current accumulation number
     gains     - RF gain (only 1 ADC and 1 RF input)
     data_file_obj  - where raw data are stored
     logger    - logging.Logger instance
@@ -661,7 +672,6 @@ class SAOfwif(MC.DeviceReadThread):
                      roach_log_level = logging.INFO,
                      clock_synth     = None,
                      integr_time        = 1,
-                     writer_queue    = None,
                      write_to_disk   = False,
                      TAMS_logging    = False,
                      timing_report   = False):
@@ -683,7 +693,7 @@ class SAOfwif(MC.DeviceReadThread):
     self.freqs = BE.get_freq_array(self.bandwidth, self.num_chan)
     self.RFchannel = {0: SAOfwif.Channel(self, "RF0")}
     # integration (number of accumulations)
-    self.acc_count = 0
+    self.spectrum_count = 0
     # The following is over-written by start().  The low value here is for the
     # first call to ``action()`` after the thread is created but not yet
     # suspended.
@@ -693,8 +703,8 @@ class SAOfwif(MC.DeviceReadThread):
     self.daemon = True
     # action will ignore ``scan=0`` until the thread is suspended
     self.scan = 0
-    self.start()
-    self.suspend_thread()
+    self.start() # this starts the thread
+    #self.suspend_thread()
 
   def initialize_roach(self, RF_gain=0, RFid=0, integr_time=1,
                        timing_report=False):
@@ -717,9 +727,8 @@ class SAOfwif(MC.DeviceReadThread):
     # default integration time per accumulation is 1 sec
     self.integr_time_set(integr_time)
     self.ctrl_set(flasher_en=False, cnt_rst='pulse', clr_status='pulse')
-    self.logger.info("initialize_roach: %d accumulations acquired from %s",
-                     self.get_accum_count(), self.name)
     self.get_gains()
+    self.logger.debug("initialize_roach: %s done", self.name)
 
   def action(self):
     """
@@ -732,43 +741,44 @@ class SAOfwif(MC.DeviceReadThread):
     associated header values for each spectrum.  When the number of
     spectra equals the requested number, it stops and reports.
     """
-    self.acc_count += 1
+    # record number, starts with 0 so first one is 1
+    self.spectrum_count += 1
+    UNIXtime = nowgmt()
     self.logger.debug(
-               "action: entered for %s with acc_count=%d, max_count=%d scan=%d",
-               self.name, self.acc_count, self.max_count, self.scan)
-    UNIXtime = time.time()+time.altzone
-    if self.acc_count > self.max_count:
+               "action: %s %s %s %s entered",
+               self.name, self.scan, nowgmt(), self.spectrum_count)
+    if self.spectrum_count > self.max_count:
       # got all spectra for this scan
       self.suspend_thread()
-      self.logger.debug("action: %s max accum count exceeded", self.name)
-      # requested number of integrations (accumulations) is done
+      self.logger.info("action: %s %d %s done", self.name, self.scan, nowgmt())
       # increment scan
       self.scan += 1
-      msg = {"type": "scan end", 
+      # start a new scan
+      self.spectrum_count = 0  # reset counter
+      msg = {"type": "new scan", 
              "name": self.name,
              "time": UNIXtime, 
              "scan": self.scan,
              "record": 0,
              "data": None}
-      self.logger.debug("action: end to combiner: %s", msg.keys())
+      self.logger.debug("action: %s %s %s new scan# to combiner", 
+                        self.name, self.scan, nowgmt())
       self.parent.combiner.inqueue.put(msg)
-      self.logger.info("action: %s scan %d done", self.name, self.scan)
-      # start a new scan
-      self.acc_count = 0  # reset counter
     else:
       # Get another integration (accumulation)
       #    this blocks until the spectrum is done
       accum = self.get_next_spectrum()
-      self.logger.debug("action: %s got integration %d", self.name,
-                          self.acc_count)
+      self.logger.debug("action: %s %s %s got integration %d", 
+                        self.name, self.scan, nowgmt(), self.spectrum_count)
       msg = {"type":"spectrum", 
              "name": self.name, 
              "time": UNIXtime,
              "scan": self.scan, 
-             "record": self.acc_count, 
+             "record": self.spectrum_count, 
              "data": list(accum)}
-      self.logger.debug("action: spectrum to combiner: %s", msg.keys())
       self.parent.combiner.inqueue.put(msg)
+      self.logger.debug("action: %s %s %s finished %s",
+                        self.name, self.scan, nowgmt(), self.spectrum_count)
         
   def calibrate(self):
     """
@@ -792,7 +802,7 @@ class SAOfwif(MC.DeviceReadThread):
     """
     Initiate the sync pulses
     """
-    self.end_integr = time.time() + time.altzone + self.integr_time
+    self.end_integr = nowgmt() + self.integr_time
     self.logger.debug("sync_start: %s will stop at %s", 
                       self.name, self.end_integr)
     self.resume_thread()
@@ -842,7 +852,7 @@ class SAOfwif(MC.DeviceReadThread):
     self.logger.info(
       "integr_time_set: %s accum. time set to %2.2f sec (%i raw spectra).",
       self.name, integr_time, self.n_raw)
-    self.sync_start()
+    #self.sync_start()
 
   def ctrl_set(self, **kwargs):
     """
@@ -918,7 +928,7 @@ class SAOfwif(MC.DeviceReadThread):
     The spectrometer does not stop running and ``acc_cnt`` will keep on 
     incrementing until the spectrometer is reset.
     """
-    return self.acc_count
+    return self.spectrum_count
 
   def get_spectrum(self):
     """
@@ -966,9 +976,9 @@ class SAOfwif(MC.DeviceReadThread):
     # get the current value
     #accum_cnt = self.get_accum_count()
     done = False
-    while time.time() + time.altzone < self.end_integr:  # test at the usec level
-      pass
-    self.end_integr = time.time() + time.altzone + self.integr_time
+    while nowgmt() < self.end_integr:  # test at the usec level
+      time.sleep(0.001)
+    self.end_integr = nowgmt() + self.integr_time
     return self.get_spectrum()
 
   def quit(self):
@@ -1169,8 +1179,7 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
     run    - True if server is running
   """
   def __init__(self, name, roachlist=['roach1', 'roach2', 'roach3', 'roach4'], 
-                     logpath=support.local_dirs.log_dir, int_time=1,
-               template='roach'):
+                     logpath=support.local_dirs.log_dir, template='roach'):
     """
     Initialize an SAO spectrometer server
     """
@@ -1186,8 +1195,7 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
                               roachlist=roachlist,
                               template=template,
                               TAMS_logging=False)
-    self.logger.debug("__init__: setting integration time to %s", int_time)
-    self.set_integration(int_time)
+    # self.set_integration(int_time) # already done by SAObackend
     self.logger = mylogger
     self.run = True
     self.logger.debug("__init__: done")
