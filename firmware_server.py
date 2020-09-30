@@ -5,7 +5,7 @@ import Pyro5.api
 
 from openpyxl import load_workbook
 from openpyxl.reader.excel import InvalidFileException
-from support.excel import *
+import support.excel
 
 module_logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class FirmwareServer():
     ))
     try:
     #   self.firmware_wb = load_workbook(self.parampath+self.paramfile)
-      self.firmware_wb = load_workbook(os.path.join(self.parampath,self.paramfile))
+      self.firmware_wb = support.excel.load_workbook(os.path.join(self.parampath,self.paramfile))
     except IOError as details:
       self.logger.error(
       "_open_parameter_spreadsheet: loading spreadsheet failed with IO error.",
@@ -88,10 +88,10 @@ class FirmwareServer():
     if sheet == '':
       sheet = self.param_ws
       self.logger.debug('get_keys: checking sheet %s', sheet)
-      keys = get_column(sheet,'key')
+      keys = support.excel.get_column(sheet,'key')
     else:
       sheet = self.firmware_wb.get_sheet_by_name(sheet)
-      keys = get_column(sheet,'Register')
+      keys = support.excel.get_column(sheet,'Register')
     return keys
 
   def firmware_summary(self,key):

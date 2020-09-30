@@ -14,6 +14,7 @@ methods should be eventually converted to ``SAOfwif.Channel`` methods.
 
 Each ``SAOfwif`` object initializes its channel(s) and simulates the ROACH's
 firmware initialization which consists of::
+
   * setting the FFT shift register,
   * setting the gain of the RF sections of the ADC channels,
   * setting the accumulation (integration) time as a number of accumulations,
@@ -23,6 +24,7 @@ firmware initialization which consists of::
   * sets the scan number to 1.
 
 The ``SAObackend'``method ``start()`` is invoked by a client. For each ROACH it::
+
   * resumes the thread,
   * invokes the client's callback handler to provide the start time,
   * sets the number of accumulated spectra to zero.
@@ -30,10 +32,12 @@ The ``SAObackend'``method ``start()`` is invoked by a client. For each ROACH it:
 The ``SAOfwif`` method ``action()`` increments the number of accumulations and
 checks to see if it exceeds exceeds the specified number of accumulations for
 a scan.  If not it::
+
   * waits for the accumulation to be completed,
   * puts the accumulation (spectrum) on the combiner queue.
   
 If the number of accumulations exceeds the specified maximum it::
+
   * suspends the threat,
   * sets the number of accumulations to 0,
   * increments the scan number.
@@ -70,18 +74,13 @@ time in seconds.
 
 Example
 =======
+
+Creating a backend server at the command line::
+
   from MonitorControl.BackEnds.ROACH1.SAOfwif import SAObackend
   be = SAObackend("SAO spectrometer",
                   roachlist=["sao64k-1", "sao64k-2", "sao64k-3", "sao64k-4"])
 
-  roach = {}
-  outfile = {}
-  current_scan = be.roach["sao64k-4"].scan
-  for key in [1,2,3,4]:
-    outfile[key] = open("/var/tmp/sao64k-"+str(key)+".txt", "w")
-    roach[key] = be.roach['sao64k-'+str(key)]
-    roach[key].start_recording(acc_time=5)
-    roach[key].resume_thread()
 """
 
 import calendar
@@ -969,6 +968,7 @@ class SAOfwif(MC.DeviceReadThread):
   def get_next_spectrum(self):
     """
     Suggested by Jonathan::
+
       acc_new = fpga.read(acc_cnt)
       if acc_new == acc_old
           do nothing
@@ -978,6 +978,7 @@ class SAOfwif(MC.DeviceReadThread):
       else
         missed an accumulation, throw an error
       end
+
     """
     # get the current value
     #accum_cnt = self.get_accum_count()

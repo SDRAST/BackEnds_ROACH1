@@ -1,5 +1,11 @@
 """
-Python support for ROACH1 firmware
+Python Pyro client for ROACH1 firmware
+
+Notes
+=====
+This works with a Pyro5 server for ROACH1.  It's relatively independent of the
+firmware on the ROACH1. There is a server simulator derived from the hardware
+server for the 32K 1000MHz spectrometer firmware.
 """
 import calendar
 import datetime
@@ -15,8 +21,9 @@ import time
 
 from support.local_dirs import log_dir
 #from MonitorControl import ActionThread
-from MonitorControl.BackEnds import Backend, get_freq_array
-from support.pyro import asyncio
+import MonitorControl.BackEnds as BE
+import support.pyro.asyncio
+#from support.pyro import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +31,7 @@ max_spectra_per_scan = 120 # 1 h
 max_num_scans = 120 # 5 d
 
 
-class SAOclient(Backend):
+class SAOclient(BE.Backend):
     """
     SAO 32K-channel spectrometer client
     
@@ -83,7 +90,7 @@ class SAOclient(Backend):
         @type  ROACHlist : list of str
         """
         mylogger = logging.getLogger(logger.name+".SAOclient")
-        Backend.__init__(self, name, inputs=inputs, output_names=output_names)
+        BE.Backend.__init__(self, name, inputs=inputs, output_names=output_names)
         if hardware:
             uri = Pyro5.api.URI("PYRO:backend@localhost:50004")
             self.hardware = Pyro5.api.Proxy(uri)
@@ -114,12 +121,12 @@ class SAOclient(Backend):
           # freqs() is a hardware method
           self.freqs = self.freqlist # MHz, any ROACH software will do
         else:
-          self.freqs = get_freq_array(self.bandwidth,self.num_chan)
+          self.freqs = BE.get_freq_array(self.bandwidth,self.num_chan)
         self.scans = {}
         if self.hardware:
           self.logger.debug("__init__: %s", self.roachnames)
           # callback handler
-          self.cb_receiver = asyncio.CallbackReceiver(parent=self)
+          self.cb_receiver = support.pyro.asyncio.CallbackReceiver(parent=self)
           for name in self.roachnames:
             self.logger.debug("__init__: init scans for %s", name)
             self.scans[name] = {"done": False, "scan": None, "record": None}
@@ -205,86 +212,4 @@ class SAOclient(Backend):
         """
         for roachname in self.roachnames:
             self.disk_monitor[roachname].terminate()
-
-# -----------------------------------------------------------------------------
-
-class Obsolete():
-    @Pyro5.api.callback
-    def start_handler(self, res):
-        """
-        receive and package spectra obtained from an integration by all ROACHs
-
-        This receives spectra from ROACHs and combines them into one array.
-        Each is labelled with its scan and recorded number. The spectra are
-        collected in a multi-level dict keyed on scan number, record number, and
-        ROACH name.
-
-        The SAObackend sends (via SAOspecServer) messages with five items:
-          status - 'done' or 'record',
-          name   - the ROACH name, e.g., 'sao64k-1',
-          file   - full path to the data file
-          scan   - current scan number,
-          accum  - current accumulation number (-1 for status 'done'),
-          data   - the spectrum (status 'record') or time (status 'done')
-
-        20190820: To avoid problem callback we do not send data but the file
-        where the data are stored.
-        """
-        #self.last_scan = -1 # initialize the
-        self.logger.debug("start_handler: 'res' keys %s", list(res.keys()))
-        if type(res) == dict:
-            # callback messages always have a name and a scan
-            name = res['name']
-            scan = res['scan']
-            self.scans[name]["scan"] = scan
-            if res["type"] == "done":
-                # Signal the receiving software that all records are done
-                self.scans[name]["done"] = res["type"]
-                self.scans[name]["time"] = res["time"]
-                self.logger.debug("start_handler: %s scan %d finished", name, scan)
-            elif res["type"] == "record":
-                record = res["record"]
-                # Process a record and add it to the current record structure
-                self.scans[name]["done"] = False
-                self.logger.debug("start_handler: %s scan %d record %d put on queue",
-                                  name, scan, record)
-        else:
-            raise TypeError(
-                ("start_handler: input is not a dict but type {}").format())
-
-
-class ObsoleteCallbackHandler(asyncio.CallbackReceiver):
-    """
-    Processor for returned data
-    """
-    def __init__(self, parent=None, queue=None):
-        """
-        """
-        if parent:
-            pass
-        else:
-            raise RuntimeError("CallbackHandler needs a parent")
-        mylogger = logging.logger(logger.name+".CallbackHandler")
-        asyncio.CallbackReceiver.__init__(self, parent=parent, queue=queue)
-        self.logger = mylogger
-        
-    def finished(self, msg):
-        """
-        replace superclass method, which just puts data on queue
-        """
-        if type(res) != dict:
-          self.logger.error("finished: cannot handle type %s data", type(res))
-          return None
-        else:
-          # send a messages to the browser: 
-          #   {"entered": True, "time": time.strftime("%Y/%j %H:%M:%S", time.gmtime())}
-          #   {"type": "start", "scan": res["scan"], "record": res["record"]}
-          # set some DSSServer attributes about the ROACH input signals
-          self.parent.parent.get_signals()
-          # decrement the spectrum count
-          self.parent.parent.spectra_left -= 1
-          self.logger.debug("finished: %d spectra left", self.spectra_left)
-          # put the data on the FITS queue
-          self.parent.parent.FITSqueue.put(res)
-          self.logger.debug("finished: data put on FITS queue")
 
