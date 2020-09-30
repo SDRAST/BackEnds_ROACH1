@@ -1,0 +1,783 @@
+DEBUG:__main__.SAOspecServer:start: called for 30 accumulations
+INFO:__main__.SAOfwif:integr_time_set: roach1 accum. time set to 10.00 sec (311280 raw spectra).
+DEBUG:__main__.SAOfwif:sync_start: roach1 will stop at 1599121595.0561008
+INFO:__main__.SAOfwif:integr_time_set: roach2 accum. time set to 10.00 sec (311280 raw spectra).
+DEBUG:__main__.SAOfwif:sync_start: roach2 will stop at 1599121595.0561519
+INFO:__main__.SAOfwif:integr_time_set: roach3 accum. time set to 10.00 sec (311280 raw spectra).
+DEBUG:__main__.SAOfwif:sync_start: roach3 will stop at 1599121595.0561917
+INFO:__main__.SAOfwif:integr_time_set: roach4 accum. time set to 10.00 sec (311280 raw spectra).
+DEBUG:__main__.SAOfwif:sync_start: roach4 will stop at 1599121595.0562289
+DEBUG:__main__.SAOspecServer:start: starting roach1
+DEBUG:__main__.SAOspecServer:start: starting roach2
+DEBUG:__main__.SAOspecServer:start: starting roach3
+DEBUG:__main__.SAOspecServer:start: starting roach4
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121585.0566056 1 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121585.0566475 1 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121585.066949 1 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121586.4095623 1 entered
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121595.05852 got integration 1
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121595.0597456 finished 1
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121595.0597854 2 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121595.0598445 1 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121595.064974 stored 1
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121595.1024957 got integration 1
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121595.1089137 finished 1
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121595.10896 2 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121595.1137033 1 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121595.1138022 stored 1
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121595.1243823 got integration 1
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121595.1265216 finished 1
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121595.1265874 2 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121595.1296759 1 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121595.13481 stored 1
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121598.8888044 got integration 1
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121598.8900914 finished 1
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121598.8901472 1 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121598.9043643 2 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121599.5733237 stored 1
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121605.0590272 got integration 2
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121605.0601175 finished 2
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121605.060179 2 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121605.0602624 3 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121605.0603771 got integration 2
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121605.060465 stored 2
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121605.0719175 finished 2
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121605.09172 3 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121605.0916495 got integration 2
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121605.0862536 2 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121605.1122565 got integration 2
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121605.1285782 finished 2
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121605.1580656 stored 2
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121605.1847079 finished 2
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121605.19385 3 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121605.2143497 2 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121605.2296646 3 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121605.2758164 stored 2
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121605.3166513 2 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121605.3167307 stored 2
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121615.0599263 got integration 3
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121615.0610166 finished 3
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121615.0610514 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121615.0610838 3 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121615.066246 stored 3
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121615.0931404 got integration 3
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121615.0943198 finished 3
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121615.0943892 3 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121615.1044872 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121615.1105545 stored 3
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121615.1158612 got integration 3
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121615.1264164 got integration 3
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121615.1276999 finished 3
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121615.127772 3 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121615.142972 finished 3
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121616.2230372 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121616.284302 stored 3
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121616.294618 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121616.8753364 3 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121616.97226 stored 3
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121625.059822 got integration 4
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121625.0609725 finished 4
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121625.0610394 5 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121625.0712569 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121625.071392 stored 4
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121625.0715816 got integration 4
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121625.0727808 finished 4
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121625.0728302 5 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121625.0774841 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121625.0776029 stored 4
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121625.0829976 got integration 4
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121625.088181 got integration 4
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121625.0995271 finished 4
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121625.1595635 4 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121625.1719306 finished 4
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121625.185096 5 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121625.2106433 stored 4
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121625.225951 5 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121625.6741061 4 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121626.3103864 stored 4
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121635.0594919 got integration 5
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121635.0607984 finished 5
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121635.0609527 6 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121635.0609887 5 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121635.0661368 stored 5
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121635.0816858 got integration 5
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121635.0829144 finished 5
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121635.0829666 5 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121635.1045117 got integration 5
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121635.1048975 got integration 5
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121635.1050715 6 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121635.1152766 stored 5
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121635.1266894 finished 5
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121635.1373246 finished 5
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121635.2077203 5 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121635.228193 6 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121635.2384737 6 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121636.7125623 stored 5
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121636.7789161 5 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121636.7840643 stored 5
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121645.0604074 got integration 6
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121645.0620224 finished 6
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121645.0621173 7 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121645.067232 6 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121645.0723984 stored 6
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121645.0882847 got integration 6
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121645.0901408 finished 6
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121645.1000025 7 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121645.0998807 6 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121645.0902088 got integration 6
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121645.1204512 stored 6
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121645.136929 finished 6
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121645.1613576 got integration 6
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121645.161624 6 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121645.2629516 7 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121645.3301213 finished 6
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121646.2707636 stored 6
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121646.3065999 7 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121647.0517893 6 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121647.1281157 stored 6
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121655.0603988 got integration 7
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121655.0615213 finished 7
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121655.0615566 8 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121655.0615897 7 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121655.0667546 stored 7
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121655.093716 got integration 7
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121655.1000514 finished 7
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121655.100105 8 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121655.1001575 got integration 7
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121655.1258037 7 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121655.1420262 finished 7
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121655.151262 stored 7
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121655.171674 got integration 7
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121655.171829 8 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121655.1820657 7 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121655.287287 finished 7
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121655.3168132 stored 7
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121657.0705361 8 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121657.1265993 7 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121657.5266464 stored 7
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121665.060817 got integration 8
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121665.062543 finished 8
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121665.0627184 9 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121665.0626662 8 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121665.0729837 got integration 8
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121665.0885153 stored 8
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121665.110736 finished 8
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121665.124314 8 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121665.1408603 9 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121665.1463234 got integration 8
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121665.1564393 got integration 8
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121665.1666772 stored 8
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121665.4114103 finished 8
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121665.4220212 finished 8
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121665.4358718 8 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121665.4511733 9 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121665.4715586 9 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121665.9276197 stored 8
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121667.0190897 8 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121667.0192432 stored 8
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121675.0609117 got integration 9
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121675.0620914 finished 9
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121675.0621257 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121675.072422 9 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121675.0776124 stored 9
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121675.0828257 got integration 9
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121675.0894868 finished 9
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121675.089577 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121675.0947783 9 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121675.1054983 stored 9
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121675.1053956 got integration 9
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121675.1373248 finished 9
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121675.1374087 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121675.1421587 9 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121675.1422055 stored 9
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121675.1576467 got integration 9
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121675.158917 finished 9
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121675.1640542 9 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121675.193513 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121675.2291267 stored 9
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121685.0610087 got integration 10
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121685.0622034 finished 10
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121685.062317 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121685.0622725 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121685.0776842 stored 10
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121685.082911 got integration 10
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121685.0958056 finished 10
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121685.0958915 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121685.0992978 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121685.09934 stored 10
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121685.099523 got integration 10
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121685.1006386 finished 10
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121685.10067 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121685.1047168 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121685.104797 stored 10
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121685.110034 got integration 10
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121685.1163368 finished 10
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121685.116402 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121685.5428364 10 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121685.5429351 stored 10
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121695.0605326 got integration 11
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121695.0617092 finished 11
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121695.0618587 11 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121695.0620475 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121695.0622718 stored 11
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121695.113921 got integration 11
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121695.1202407 finished 11
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121695.1203122 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121695.3079913 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121695.3080873 stored 11
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121695.3489826 got integration 11
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121695.3554418 finished 11
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121695.355542 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121695.797962 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121695.7980566 stored 11
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121695.803289 got integration 11
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121695.8044596 finished 11
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121695.8044946 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121696.043213 11 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121696.0433095 stored 11
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121705.0615025 got integration 12
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121705.062648 finished 12
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121705.0626855 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121705.0628247 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121705.0681877 stored 12
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121705.0786524 got integration 12
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121705.0848868 finished 12
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121705.0849533 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121705.1206963 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121705.120859 stored 12
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121705.1210442 got integration 12
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121705.1223133 finished 12
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121705.122369 13 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121705.8899207 got integration 12
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121705.8911328 finished 12
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121705.8912067 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121705.9052296 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121705.9103951 stored 12
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121705.910534 12 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121705.9106178 stored 12
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121715.0621297 got integration 13
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121715.0633497 finished 13
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121715.063405 14 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121715.0635335 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121715.0687516 stored 13
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121715.0793335 got integration 13
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121715.080474 finished 13
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121715.0805218 14 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121715.089785 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121715.089918 stored 13
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121715.0953124 got integration 13
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121715.1015468 finished 13
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121715.1016212 14 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121717.1597838 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121717.1599123 stored 13
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121717.185229 got integration 13
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121717.1968336 finished 13
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121717.2019517 14 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121719.5120304 13 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121719.5121365 stored 13
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121725.0627081 got integration 14
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121725.0639098 finished 14
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121725.0639498 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121725.0690482 14 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121725.074189 stored 14
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121725.0897686 got integration 14
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121725.0918264 finished 14
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121725.0970447 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121725.1227667 14 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121725.1279283 stored 14
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121725.128039 got integration 14
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121725.1291938 finished 14
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121725.129232 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121725.1394827 14 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121725.1498992 got integration 14
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121725.1906219 stored 14
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121726.7652173 finished 14
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121726.860628 14 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121726.9317508 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121726.9520776 stored 14
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121735.0724862 got integration 15
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121735.0736334 finished 15
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121735.0740683 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121735.090694 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121735.090783 stored 15
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121735.1121426 got integration 15
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121735.1183474 finished 15
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121735.118455 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121736.8219826 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121736.8220792 stored 15
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121737.3330374 got integration 15
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121737.3402307 finished 15
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121737.340339 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121738.1999547 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121738.2000709 stored 15
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121739.452155 got integration 15
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121739.453312 finished 15
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121739.4533818 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121739.6512156 15 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121739.6513143 stored 15
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121745.0638037 got integration 16
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121745.0649672 finished 16
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121745.0650024 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121745.0702512 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121745.070298 stored 16
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121745.0858877 got integration 16
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121745.092274 finished 16
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121745.0924037 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121745.0969703 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121745.0970492 stored 16
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121745.1024232 got integration 16
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121745.1035562 finished 16
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121745.1036186 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121745.5921507 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121745.5973148 stored 16
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121745.617867 got integration 16
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121745.619275 finished 16
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121745.6193495 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121745.6599946 16 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121745.6651464 stored 16
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121755.0643349 got integration 17
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121755.0654955 finished 17
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121755.065551 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121755.0758586 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121755.0759223 stored 17
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121755.0760486 got integration 17
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121755.0772145 finished 17
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121755.0772505 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121755.082343 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121755.0824244 stored 17
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121755.1186583 got integration 17
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121755.1199317 finished 17
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121755.1199872 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121755.170777 17 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121755.1708672 stored 17
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121755.2677445 got integration 17
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121755.2689824 finished 17
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121755.2690725 17 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121755.686224 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121755.7526312 stored 17
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121765.064052 got integration 18
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121765.0652452 finished 18
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121765.065304 18 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121765.065344 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121765.0654526 stored 18
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121765.0655077 got integration 18
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121765.0979393 finished 18
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121765.0982525 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121765.0981884 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121765.1086156 stored 18
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121765.129141 got integration 18
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121765.1303506 finished 18
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121765.1304061 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121765.1352584 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121765.1353176 stored 18
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121765.1608074 got integration 18
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121765.1670542 finished 18
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121765.167128 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121766.8144073 18 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121766.8145041 stored 18
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121775.0647275 got integration 19
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121775.0658472 finished 19
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121775.065883 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121775.0709772 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121775.0710216 stored 19
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121775.0814006 got integration 19
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121775.087977 finished 19
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121775.0931237 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121775.098243 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121775.0983539 stored 19
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121775.1136138 got integration 19
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121775.1148877 finished 19
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121775.114954 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121775.1189175 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121775.118961 stored 19
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121775.1241643 got integration 19
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121776.0079117 finished 19
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121776.0080032 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121776.4709 19 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121776.4710014 stored 19
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121785.065155 got integration 20
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121785.066671 finished 20
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121785.0667555 21 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121785.071887 got integration 20
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121785.0780823 finished 20
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121785.0781372 21 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121785.083277 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121785.0886912 stored 20
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121785.0888038 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121785.088872 stored 20
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121785.0993602 got integration 20
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121785.1005704 finished 20
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121785.1006584 20 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121785.1312506 21 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121785.9611626 stored 20
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121786.234696 got integration 20
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121786.2409072 finished 20
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121786.240981 21 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121787.0805762 20 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121787.0806975 stored 20
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121795.0653255 got integration 21
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121795.066942 finished 21
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121795.067 21 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121795.0670443 22 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121795.0671341 stored 21
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121795.0674627 got integration 21
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121795.0841818 finished 21
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121795.0893378 21 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121795.0894768 22 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121795.1025324 stored 21
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121795.107905 got integration 21
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121795.1133604 got integration 21
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121796.596305 finished 21
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121796.6512356 21 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121796.6524997 finished 21
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121796.6615553 22 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121796.9674053 stored 21
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121796.9930909 22 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121797.0338123 21 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121797.074695 stored 21
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121805.065098 got integration 22
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121805.0662682 finished 22
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121805.0663028 23 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121805.0715609 22 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121805.0716076 stored 22
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121805.1391983 got integration 22
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121805.1404283 finished 22
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121805.1404984 22 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121805.1407056 23 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121805.140852 got integration 22
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121805.1409907 stored 22
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121805.1521623 got integration 22
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121805.1532805 finished 22
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121805.3352842 22 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121806.0186057 finished 22
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121806.358987 23 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121806.394717 stored 22
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121806.4203968 23 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121806.6589146 22 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121806.6997488 stored 22
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121815.0654383 got integration 23
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121815.0665667 finished 23
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121815.0666015 24 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121815.0667207 23 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121815.0719557 stored 23
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121815.1196046 got integration 23
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121815.1208127 finished 23
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121815.1209064 23 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121815.135134 24 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121815.1468053 got integration 23
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121815.1520593 got integration 23
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121815.15217 stored 23
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121815.1687331 finished 23
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121815.1841865 finished 23
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121815.1984596 23 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121815.2086692 24 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121815.2087862 24 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121815.2241654 stored 23
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121816.7791476 23 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121816.7792468 stored 23
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121825.0665894 got integration 24
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121825.0677571 finished 24
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121825.067796 25 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121825.0783281 24 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121825.0784085 stored 24
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121825.078486 got integration 24
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121825.0796843 finished 24
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121825.0797167 25 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121825.4572504 24 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121825.4624183 stored 24
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121825.48319 got integration 24
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121825.4843996 finished 24
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121825.4844584 25 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121825.4884722 24 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121825.488518 stored 24
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121825.8049383 got integration 24
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121825.8061614 finished 24
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121825.811254 24 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121826.4575431 25 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121826.4985607 stored 24
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121835.0671136 got integration 25
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121835.0682943 finished 25
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121835.0684233 26 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121835.0683422 25 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121835.0788267 stored 25
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121835.0841115 got integration 25
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121835.0853462 finished 25
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121835.0905044 25 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121835.0969267 26 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121835.1122046 stored 25
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121835.112405 got integration 25
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121835.1329477 got integration 25
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121836.1538777 finished 25
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121836.173141 25 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121836.1842933 finished 25
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121836.1986384 26 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121836.2088435 stored 25
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121836.2495167 26 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121836.305739 25 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121836.3363338 stored 25
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121845.0673873 got integration 26
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121845.0685892 finished 26
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121845.0686247 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121845.0737598 26 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121845.0738099 stored 26
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121845.0894778 got integration 26
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121845.0906885 finished 26
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121845.0958223 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121845.1009152 26 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121845.1011562 got integration 26
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121845.1163838 stored 26
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121845.1288493 finished 26
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121845.1377246 got integration 26
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121845.1480079 26 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121845.454357 27 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121845.465796 finished 26
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121845.4749978 stored 26
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121845.5160534 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121845.531321 26 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121845.5823693 stored 26
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121855.067412 got integration 27
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121855.0689917 finished 27
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121855.0690503 28 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121855.0741792 got integration 27
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121855.080389 finished 27
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121855.0804353 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121855.2970705 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121855.3023067 stored 27
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121855.3023758 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121855.3024356 stored 27
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121855.3242311 got integration 27
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121855.3254726 finished 27
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121855.3255422 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121855.3295083 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121855.329554 stored 27
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121855.3297303 got integration 27
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121855.3308551 finished 27
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121855.335953 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121855.3360102 27 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121855.8079727 stored 27
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121865.0677066 got integration 28
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121865.0692303 finished 28
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121865.069323 29 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121865.0744956 got integration 28
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121865.0807104 finished 28
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121865.0807462 29 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121865.73759 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121865.737687 stored 28
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121865.737753 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121865.7378232 stored 28
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121866.1993756 got integration 28
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121866.200575 finished 28
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121866.2006154 29 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121866.3525362 got integration 28
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121866.3537898 finished 28
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121866.3538349 29 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121866.4551518 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121866.4552677 stored 28
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121866.4553285 28 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121866.4553661 stored 28
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121875.068131 got integration 29
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121875.0696924 finished 29
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121875.0698562 30 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121875.0698013 29 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121875.0750906 got integration 29
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121875.0803812 stored 29
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121875.0868957 finished 29
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121875.1014743 29 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121875.11164 got integration 29
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121875.1176443 30 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121875.122934 got integration 29
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121875.1381645 stored 29
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121875.1546168 finished 29
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121875.1903703 finished 29
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121875.2045712 29 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121875.2199845 30 entered
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121875.2302678 30 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121875.2506514 stored 29
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121876.8009553 29 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121876.801034 stored 29
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach3 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach4 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach1 Channel "RF0"
+DEBUG:__main__.SAOfwif.Channel:get_ADC_snap: called for roach2 Channel "RF0"
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121885.0682654 got integration 30
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121885.069807 finished 30
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121885.0699162 30 entered
+DEBUG:__main__.SAOfwif:action: roach3 1 1599121885.0699883 31 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 1 1599121885.0701668 stored 30
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121885.0702784 got integration 30
+INFO:__main__.SAOfwif:action: roach3 1 1599121885.0703397 done
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121885.071594 finished 30
+DEBUG:__main__.SAOfwif:action: roach3 2 1599121885.07166 new scan# to combiner
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121885.0717225 30 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 1 1599121885.0720258 stored 30
+DEBUG:__main__.SAOfwif:action: roach4 1 1599121885.0718482 31 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 2 1599121885.0721624 0 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach3 received new scan message
+INFO:__main__.SAOfwif:action: roach4 1 1599121885.0722675 done
+DEBUG:__main__.SAOfwif:action: roach4 2 1599121885.0724895 new scan# to combiner
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121885.0725281 got integration 30
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 2 1599121885.072597 0 entered
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121885.0737221 finished 30
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach4 received new scan message
+DEBUG:__main__.SAOfwif:action: roach1 1 1599121885.0738492 31 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121885.0739117 30 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121885.0739486 got integration 30
+INFO:__main__.SAOfwif:action: roach1 1 1599121885.0739763 done
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 1 1599121885.074011 stored 30
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121885.0752091 finished 30
+DEBUG:__main__.SAOfwif:action: roach1 2 1599121885.0752616 new scan# to combiner
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121885.0753787 30 entered
+DEBUG:__main__.SAOfwif:action: roach2 1 1599121885.0754519 31 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 1 1599121885.0755665 stored 30
+INFO:__main__.SAOfwif:action: roach2 1 1599121885.0756383 done
+DEBUG:__main__.SAOfwif:action: roach2 2 1599121885.0870457 new scan# to combiner
+ERROR:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:process_data: no callback specified
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 2 1599121885.7422175 0 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach1 received new scan message
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 2 1599121885.7422786 0 entered
+DEBUG:MonitorControl.BackEnds.ROACH1.combiner.DataCombiner:combine_data: roach2 received new scan message

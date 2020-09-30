@@ -24,41 +24,6 @@ max_spectra_per_scan = 120 # 1 h
 max_num_scans = 120 # 5 d
 
 
-class CallbackHandler(asyncio.CallbackReceiver):
-    """
-    Processor for returned data
-    """
-    def __init__(self, parent=None, queue=None):
-        """
-        """
-        if parent:
-            pass
-        else:
-            raise RuntimeError("CallbackHandler needs a parent")
-        mylogger = logging.logger(logger.name+".CallbackHandler")
-        asyncio.CallbackReceiver.__init__(self, parent=parent, queue=queue)
-        self.logger = mylogger
-        
-    def finished(self, msg):
-        """
-        replace superclass method, which just puts data on queue
-        """
-        if type(res) != dict:
-          self.logger.error("finished: cannot handle type %s data", type(res))
-          return None
-        else:
-          # send a messages to the browser: 
-          #   {"entered": True, "time": time.strftime("%Y/%j %H:%M:%S", time.gmtime())}
-          #   {"type": "start", "scan": res["scan"], "record": res["record"]}
-          # set some DSSServer attributes about the ROACH input signals
-          self.parent.parent.get_signals()
-          # decrement the spectrum count
-          self.parent.parent.spectra_left -= 1
-          self.logger.debug("finished: %d spectra left", self.spectra_left)
-          # put the data on the FITS queue
-          self.parent.parent.FITSqueue.put(res)
-          self.logger.debug("finished: data put on FITS queue")
-
 class SAOclient(Backend):
     """
     SAO 32K-channel spectrometer client
@@ -225,6 +190,25 @@ class SAOclient(Backend):
                             callback=self.cb_receiver)
         self.logger.debug("start_recording: started")
 
+    def help(self, kind=None):
+        """
+        """
+        if self.hardware is not None:
+            if kind == "server":
+                return self.hardware.server_help()
+            elif kind == "backend":
+                return self.hardware.backend_help()
+        return "Types available: server, backend"
+
+    def stop_recording(self):
+        """
+        """
+        for roachname in self.roachnames:
+            self.disk_monitor[roachname].terminate()
+
+# -----------------------------------------------------------------------------
+
+class Obsolete():
     @Pyro5.api.callback
     def start_handler(self, res):
         """
@@ -268,19 +252,39 @@ class SAOclient(Backend):
             raise TypeError(
                 ("start_handler: input is not a dict but type {}").format())
 
-    def help(self, kind=None):
-        """
-        """
-        if self.hardware is not None:
-            if kind == "server":
-                return self.hardware.server_help()
-            elif kind == "backend":
-                return self.hardware.backend_help()
-        return "Types available: server, backend"
 
-    def stop_recording(self):
+class ObsoleteCallbackHandler(asyncio.CallbackReceiver):
+    """
+    Processor for returned data
+    """
+    def __init__(self, parent=None, queue=None):
         """
         """
-        for roachname in self.roachnames:
-            self.disk_monitor[roachname].terminate()
+        if parent:
+            pass
+        else:
+            raise RuntimeError("CallbackHandler needs a parent")
+        mylogger = logging.logger(logger.name+".CallbackHandler")
+        asyncio.CallbackReceiver.__init__(self, parent=parent, queue=queue)
+        self.logger = mylogger
+        
+    def finished(self, msg):
+        """
+        replace superclass method, which just puts data on queue
+        """
+        if type(res) != dict:
+          self.logger.error("finished: cannot handle type %s data", type(res))
+          return None
+        else:
+          # send a messages to the browser: 
+          #   {"entered": True, "time": time.strftime("%Y/%j %H:%M:%S", time.gmtime())}
+          #   {"type": "start", "scan": res["scan"], "record": res["record"]}
+          # set some DSSServer attributes about the ROACH input signals
+          self.parent.parent.get_signals()
+          # decrement the spectrum count
+          self.parent.parent.spectra_left -= 1
+          self.logger.debug("finished: %d spectra left", self.spectra_left)
+          # put the data on the FITS queue
+          self.parent.parent.FITSqueue.put(res)
+          self.logger.debug("finished: data put on FITS queue")
 

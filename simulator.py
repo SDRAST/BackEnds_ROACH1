@@ -85,6 +85,7 @@ Example
 """
 
 import calendar
+import datetime
 import logging
 import math
 import numpy
@@ -114,6 +115,11 @@ T_sys = 60
 
 def nowgmt():
   return time.time()+ time.altzone
+
+def logtime():
+  return datetime.datetime.utcnow().strftime("%H:%M:%S.%f")[:-3]
+
+
   
 ################################ classes #################################
 
@@ -746,11 +752,11 @@ class SAOfwif(MC.DeviceReadThread):
     UNIXtime = nowgmt()
     self.logger.debug(
                "action: %s %s %s %s entered",
-               self.name, self.scan, nowgmt(), self.spectrum_count)
+               self.name, self.scan, logtime(), self.spectrum_count)
     if self.spectrum_count > self.max_count:
       # got all spectra for this scan
       self.suspend_thread()
-      self.logger.info("action: %s %d %s done", self.name, self.scan, nowgmt())
+      self.logger.info("action: %s %d %s done", self.name, self.scan, logtime())
       # increment scan
       self.scan += 1
       # start a new scan
@@ -762,14 +768,14 @@ class SAOfwif(MC.DeviceReadThread):
              "record": 0,
              "data": None}
       self.logger.debug("action: %s %s %s new scan# to combiner", 
-                        self.name, self.scan, nowgmt())
+                        self.name, self.scan, logtime())
       self.parent.combiner.inqueue.put(msg)
     else:
       # Get another integration (accumulation)
       #    this blocks until the spectrum is done
       accum = self.get_next_spectrum()
       self.logger.debug("action: %s %s %s got integration %d", 
-                        self.name, self.scan, nowgmt(), self.spectrum_count)
+                        self.name, self.scan, logtime(), self.spectrum_count)
       msg = {"type":"spectrum", 
              "name": self.name, 
              "time": UNIXtime,
@@ -778,7 +784,7 @@ class SAOfwif(MC.DeviceReadThread):
              "data": list(accum)}
       self.parent.combiner.inqueue.put(msg)
       self.logger.debug("action: %s %s %s finished %s",
-                        self.name, self.scan, nowgmt(), self.spectrum_count)
+                        self.name, self.scan, logtime(), self.spectrum_count)
         
   def calibrate(self):
     """
@@ -1183,6 +1189,7 @@ class SAOspecServer(support.pyro.pyro5_server.Pyro5Server, SAObackend):
     """
     Initialize an SAO spectrometer server
     """
+    self.name = name
     mylogger = logging.getLogger(logger.name+".SAOspecServer")
     #mylogger.debug("__init__: arg 'name': %s (%s)", name, type(name))
     if roachlist:
