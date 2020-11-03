@@ -129,14 +129,14 @@ class FirmwareServer():
     bitstream = self.param_ws.cell(row=row_number, 
                                    column=col_numbers['bitstream']).value
     summary['bitstream'] = bitstream
-    n_chans = self.param_ws.cell(row=row_number,
-                                 column=col_numbers['nchans']).value
+    n_chans = int(self.param_ws.cell(row=row_number,
+                                 column=col_numbers['nchans']).value)
     summary['nchans'] = n_chans
-    n_par_streams = self.param_ws.cell(row=row_number,
-                                      column=col_numbers['n_par_streams']).value
+    n_par_streams = int(self.param_ws.cell(row=row_number,
+                                     column=col_numbers['n_par_streams']).value)
     summary['n_par_streams'] = n_par_streams
-    fft_shift = self.param_ws.cell(row=row_number,
-                                   column=col_numbers['fft_shift']).value
+    fft_shift = int(self.param_ws.cell(row=row_number,
+                                       column=col_numbers['fft_shift']).value)
     if type(fft_shift) == str or type(fft_shift) == str:
       fft_shift = int(fft_shift[2:],2)
     summary["fft_shift"] = fft_shift

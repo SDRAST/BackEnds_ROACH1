@@ -102,6 +102,7 @@ import MonitorControl.BackEnds.ROACH1.firmware_server as fws
 import Radio_Astronomy as RA
 import support
 import support.local_dirs
+import support.pyro.async_method_new as async_method
 import support.pyro.pyro5_server
 
 logger = logging.getLogger(__name__)
@@ -131,14 +132,25 @@ class RoachCombiner(combiner.DataCombiner):
     initialize a DataCombiner
     """
     combiner.DataCombiner.__init__(self, dsplist=dsplist)
+    self.parent = parent
+    self.logger = logging.getLogger(logger.name+".RoachCombiner")
     self.callback = None
   
   def process_data(self, msg):
+    """
+    replaces method in superclass
+    """
+    self.logger.debug("process_data: got %s items", len(msg))
+    self.logger.debug("process_data: callback is %s", self.parent.start.cb)
+    self.callback = self.parent.start.cb
+    self.caller = self.parent.start.caller
     if self.callback:
+      self.logger.debug("process_data: callback is %s", self.callback)
       # claim method from another thread
-      self.callback._pyroClaimOwnership()
+      self.caller._pyroClaimOwnership()
       # invoke callback's method
-      self.callback.finished(msg)
+      #self.callback.finished(msg)
+      self.callback(msg)
     else:
       self.logger.error("process_data: no callback specified") 
     
@@ -298,16 +310,18 @@ class SAObackend(support.PropertiedClass):
     """
     return get_help(self.__class__)
   
-  @Pyro5.api.oneway
-  def start(self, n_accums=max_spectra_per_scan, integration_time=10.0, 
-                  callback=None):
+  @async_method.async_method # @Pyro5.api.oneway
+  def start(self, n_accums=max_spectra_per_scan, integration_time=10.0):
     """
     start a scan consisting of 'n_accums' accumulations
 
-    Adapted from SAObackend.start and SAObackend.action
+    Adapted from SAObackend.start and SAObackend.action.  This decorated 
+    `oneway` so its not return a result and won't hold up the calling
+    thread.
     """
     self.logger.debug("start: called for %d accumulations", n_accums)
-    self.combiner.callback = callback
+    #self.logger.debug("start: callback is %s", self.start.cb)
+    #self.combiner.callback = self.start.cb
     self.set_integration(integration_time)
     for name in list(self.roach.keys()):
       self.logger.debug("start: starting %s", name)
@@ -340,25 +354,29 @@ class SAObackend(support.PropertiedClass):
       names = list(self.roach.keys())
       names.sort()
       titles = ["Frequency"] + names
-      npts = self.roach[names[0]].freqs.shape[0]/squish
-      freqs = get_freq_array(self.roach[names[0]].bandwidth, npts)
+      npts = int(self.roach[names[0]].freqs.shape[0]/squish)
+      freqs = BE.get_freq_array(self.roach[names[0]].bandwidth, npts)
       # data have a typical spreedsheet organization, one list per line
       # this is the first column
       spectra = freqs.reshape(npts,1) # converts from 1D to 2D array
       # for each ROACH, one column for each ROACH
       for name in names:
           self.logger.debug("last_spectra: %s", name)
-          spectrum = self.roach[name].accum
+          spectrum = self.roach[name].get_spectrum()
+          self.logger.debug("last_spectra: got %d samples", len(spectrum))
           # average over 'squish' channels
-          result = spectrum.reshape(spectrum.shape[0]/squish, squish)
+          
+          result = spectrum.reshape(spectrum.shape[0]//squish, squish)
           result = result.mean(axis=1)
+          self.logger.debug("last_spectra: converted to %s array",
+                             result.shape)
           if dolog:
             result = numpy.log10(result)
             result[result==-numpy.inf]=0
           column = result.reshape(npts,1)
+          self.logger.debug("last_spectra: column shape is %s", column.shape)
           spectra = numpy.append(spectra, column, axis=1)
       final_list = [titles] + spectra.tolist()
-      #self.one_scan.cb({"table": final_list})
       self.logger.debug("last_spectra: got %s", final_list[0:5])
       return {"scan":   self.roach[names[0]].scan,
               "record": self.roach[names[0]].spectrum_count,
@@ -367,6 +385,7 @@ class SAObackend(support.PropertiedClass):
   def reset_scans(self):
     for name in self.roach:
       self.roach[name].scan = 0
+
     
   # The following methods invoke individual ROACH methods.  This is to make
   # individual ROACHs accessible to the client.
@@ -766,7 +785,7 @@ class SAOfwif(MC.DeviceReadThread):
              "scan": self.scan,
              "record": 0,
              "data": None}
-      self.logger.debug("action: %s %s %s new scan# to combiner", 
+      self.logger.debug("action: %s %s %s new scan to combiner", 
                         self.name, self.scan, logtime())
       self.parent.combiner.inqueue.put(msg)
     else:
@@ -1129,6 +1148,7 @@ class SAOfwif(MC.DeviceReadThread):
       self.logger.debug("get_ADC_snap: called for %s %s",self.parent.name, self)
       data = stats.norm.rvs(scale=107/math.sqrt(math.pi), 
                             size=2048)
+      self.logger.debug("get_ADC_input: returning %d samples", len(data))
       return numpy.array(data, dtype=numpy.int8)
 
     def get_ADC_input(self):
@@ -1154,6 +1174,7 @@ class SAOfwif(MC.DeviceReadThread):
     def ADC_samples(self):
       """
       """
+      self.logger("ADC_samples: entered")
       return self.get_ADC_snap(now=True)
 
     def get_RF_input(self):

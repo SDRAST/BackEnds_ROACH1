@@ -21,6 +21,7 @@ import time
 
 from support.local_dirs import log_dir
 #from MonitorControl import ActionThread
+import MonitorControl
 import MonitorControl.BackEnds as BE
 import support.pyro.asyncio
 #from support.pyro import asyncio
@@ -103,6 +104,7 @@ class SAOclient(BE.Backend):
             except AttributeError:
                 # no __get_state__ because we have a connection
                 pass
+            mylogger.debug("__init__: proxy established")
         else:
             self.hardware = None
             self.roachnames = ['sao64k-1', 'sao64k-2', 'sao64k-3', 'sao64k-4']
@@ -110,8 +112,9 @@ class SAOclient(BE.Backend):
             self.num_chan = 32768
         self.name = name
         self.logger = mylogger
-        roach1 = self.roachnames[0] # for initializing
         self.logger.info("__init__: %s input channels: %s", self, self.inputs)
+        self.logger.debug("__init__: ROACHs: %s", self.roachnames)
+        roach1 = self.roachnames[0] # for initializing
         self.data['num_chan'] = len(self.freqs(roach1))
         self.logger.debug("__init__: properties: %s", list(self.keys()))
         self.update_signals() # from Device super class
